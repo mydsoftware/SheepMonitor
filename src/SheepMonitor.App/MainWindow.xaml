@@ -1,8 +1,4 @@
-<Window x:Class="SheepMonitor.App.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="پایش گوسفندان" Height="720" Width="1200"
-        FlowDirection="RightToLeft">
+<Window x:Class="SheepMonitor.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="پایش گوسفندان" Height="720" Width="1200" FlowDirection="RightToLeft">
     <Grid Background="#F5F7FA">
         <Grid.ColumnDefinitions><ColumnDefinition Width="230"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Border Grid.Column="0" Background="#1F2937" Padding="18">
@@ -15,6 +11,7 @@
                 <Button Content="درمان" Margin="0,4" Padding="12" Click="Treatment_Click"/>
                 <Button Content="برنامه غذایی" Margin="0,4" Padding="12" Click="FeedPlan_Click"/>
                 <Button Content="تخصیص جیره" Margin="0,4" Padding="12" Click="FeedAssignment_Click"/>
+                <Button Content="موتور جیره پویا" Margin="0,4" Padding="12" Click="Ration_Click"/>
                 <Button Content="اطلاعات پایه" Margin="0,4" Padding="12" Click="ReferenceData_Click"/>
             </StackPanel>
         </Border>
