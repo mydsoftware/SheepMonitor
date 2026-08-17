@@ -7,7 +7,7 @@ namespace SheepMonitor.Core.Services;
 /// </summary>
 public interface IHealthService
 {
-    Task<IReadOnlyList<SheepHealthRecord>> GetBySheepAsync(int sheepId, CancellationToken cancellationToken = default);
-    Task<SheepHealthRecord> AddAsync(SheepHealthRecord record, CancellationToken cancellationToken = default);
-    Task UpdateAsync(SheepHealthRecord record, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<HealthRecord>> GetBySheepAsync(int sheepId, CancellationToken cancellationToken = default);
+    Task<HealthRecord> AddAsync(HealthRecord record, CancellationToken cancellationToken = default);
+    Task UpdateAsync(HealthRecord record, CancellationToken cancellationToken = default);
 }
