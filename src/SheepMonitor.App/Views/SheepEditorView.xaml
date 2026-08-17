@@ -1,0 +1,21 @@
+<UserControl x:Class="SheepMonitor.App.Views.SheepEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft">
+    <ScrollViewer>
+        <Grid Margin="24" MaxWidth="850">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="ثبت گوسفند جدید" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+            <StackPanel Grid.Row="1" Margin="0,0,0,12"><TextBlock Text="شماره دام"/><TextBox Text="{Binding Model.Number, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+            <StackPanel Grid.Row="2" Margin="0,0,0,12"><TextBlock Text="جنسیت"/><ComboBox ItemsSource="{Binding Genders}" DisplayMemberPath="Title" SelectedValuePath="Code" SelectedValue="{Binding Model.Gender}"/></StackPanel>
+            <StackPanel Grid.Row="3" Margin="0,0,0,12"><TextBlock Text="تاریخ وزن‌گیری اولیه"/><DatePicker SelectedDate="{Binding Model.InitialWeighingDate}"/></StackPanel>
+            <StackPanel Grid.Row="4" Margin="0,0,0,12"><TextBlock Text="وزن اولیه (کیلوگرم)"/><TextBox Text="{Binding Model.InitialWeightKg, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+            <StackPanel Grid.Row="5" Margin="0,0,0,12"><CheckBox Content="دام بیمار است" IsChecked="{Binding Model.IsSick}"/></StackPanel>
+            <StackPanel Grid.Row="6" Margin="0,0,0,12"><TextBlock Text="وضعیت سلامت"/><ComboBox ItemsSource="{Binding HealthStatuses}" DisplayMemberPath="Title" SelectedValuePath="Code" SelectedValue="{Binding Model.HealthStatus}"/></StackPanel>
+            <StackPanel Grid.Row="7"><TextBlock Text="مسیر تصویر"/><TextBox Text="{Binding Model.ImagePath, UpdateSourceTrigger=PropertyChanged}"/><Button Content="ثبت گوسفند" Width="140" Margin="0,12,0,0" Click="Save_Click"/></StackPanel>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
