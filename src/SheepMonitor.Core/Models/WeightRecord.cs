@@ -1,5 +1,8 @@
 namespace SheepMonitor.Core.Models;
 
+/// <summary>
+/// یک رکورد وزن‌گیری برای یک گوسفند در یک تاریخ مشخص.
+/// </summary>
 public sealed class WeightRecord
 {
     public int Id { get; set; }
