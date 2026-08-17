@@ -9,25 +9,17 @@ namespace SheepMonitor.Data.Services;
 /// </summary>
 public sealed class RationService(SheepMonitorDbContext db) : IRationService
 {
-    public async Task<IReadOnlyList<RationCalculationRule>> GetRulesAsync(CancellationToken cancellationToken = default) =>
-        await db.RationCalculationRules.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<RationCalculationRule>> GetRulesAsync(CancellationToken cancellationToken = default) => await db.RationCalculationRules.AsNoTracking().Where(x => x.IsActive).OrderBy(x => x.Name).ToListAsync(cancellationToken);
 
-    public async Task<RationCalculationRule> AddRuleAsync(RationCalculationRule rule, CancellationToken cancellationToken = default)
-    {
-        Validate(rule); db.RationCalculationRules.Add(rule); await db.SaveChangesAsync(cancellationToken); return rule;
-    }
+    public async Task<RationCalculationRule> AddRuleAsync(RationCalculationRule rule, CancellationToken cancellationToken = default) { Validate(rule); db.RationCalculationRules.Add(rule); await db.SaveChangesAsync(cancellationToken); return rule; }
 
-    public async Task<RationCalculationRule> UpdateRuleAsync(RationCalculationRule rule, CancellationToken cancellationToken = default)
-    {
-        Validate(rule); db.RationCalculationRules.Update(rule); await db.SaveChangesAsync(cancellationToken); return rule;
-    }
+    public async Task<RationCalculationRule> UpdateRuleAsync(RationCalculationRule rule, CancellationToken cancellationToken = default) { Validate(rule); db.RationCalculationRules.Update(rule); await db.SaveChangesAsync(cancellationToken); return rule; }
 
     public async Task<RationDayResult> CalculateDayAsync(RationCalculationRequest request, CancellationToken cancellationToken = default)
     {
         var weight = await ResolveWeightAsync(request, cancellationToken);
         var rules = await GetRulesAsync(cancellationToken);
-        var meals = await GetMealsAsync(cancellationToken);
-        return Calculate(request.DayNumber, request.PeriodStartDate.AddDays(request.DayNumber - 1), weight, rules, meals);
+        return await CalculateAsync(request.DayNumber, request.PeriodStartDate.AddDays(request.DayNumber - 1), weight, rules, cancellationToken);
     }
 
     public async Task<IReadOnlyList<RationDayResult>> CalculatePeriodAsync(RationCalculationRequest request, CancellationToken cancellationToken = default)
@@ -35,8 +27,9 @@ public sealed class RationService(SheepMonitorDbContext db) : IRationService
         if (request.PeriodDurationDays <= 0) throw new ArgumentOutOfRangeException(nameof(request.PeriodDurationDays));
         var weight = await ResolveWeightAsync(request, cancellationToken);
         var rules = await GetRulesAsync(cancellationToken);
-        var meals = await GetMealsAsync(cancellationToken);
-        return Enumerable.Range(1, request.PeriodDurationDays).Select(day => Calculate(day, request.PeriodStartDate.AddDays(day - 1), weight, rules, meals)).ToList();
+        var result = new List<RationDayResult>(request.PeriodDurationDays);
+        for (var day = 1; day <= request.PeriodDurationDays; day++) result.Add(await CalculateAsync(day, request.PeriodStartDate.AddDays(day - 1), weight, rules, cancellationToken));
+        return result;
     }
 
     private async Task<decimal> ResolveWeightAsync(RationCalculationRequest request, CancellationToken cancellationToken)
@@ -52,18 +45,21 @@ public sealed class RationService(SheepMonitorDbContext db) : IRationService
         return weights.Average();
     }
 
-    private async Task<IReadOnlyList<ReferenceData>> GetMealsAsync(CancellationToken cancellationToken) =>
-        await db.ReferenceData.AsNoTracking().Where(x => x.Category == "وعده غذایی" && x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(cancellationToken);
-
-    private static RationDayResult Calculate(int day, DateTime date, decimal weight, IReadOnlyList<RationCalculationRule> rules, IReadOnlyList<ReferenceData> meals)
+    private async Task<RationDayResult> CalculateAsync(int day, DateTime date, decimal weight, IReadOnlyList<RationCalculationRule> rules, CancellationToken cancellationToken)
     {
+        var mealRules = await db.RationMealRules.AsNoTracking().Where(x => x.IsActive).ToListAsync(cancellationToken);
+        var mealCodes = mealRules.Select(x => x.MealCode).Distinct().ToList();
+        var meals = await db.ReferenceData.AsNoTracking().Where(x => mealCodes.Contains(x.Code) && x.IsActive).ToListAsync(cancellationToken);
         var result = new RationDayResult { DayNumber = day, Date = date };
-        foreach (var meal in meals)
-            foreach (var rule in rules)
+        foreach (var rule in rules)
+        {
+            var amount = Math.Clamp(rule.BasePercent / 100m * weight + rule.WeightCoefficient * weight, rule.MinimumKg, rule.MaximumKg);
+            foreach (var mealRule in mealRules.Where(x => x.RationCalculationRuleId == rule.Id))
             {
-                var amount = Math.Clamp(rule.BasePercent / 100m * weight + rule.WeightCoefficient * weight, rule.MinimumKg, rule.MaximumKg);
-                result.Meals.Add(new RationMealResult { FeedCode = rule.FeedCode, FeedTitle = rule.FeedCode, MealCode = meal.Code, MealTitle = meal.Title, AmountKg = amount });
+                var meal = meals.FirstOrDefault(x => x.Code == mealRule.MealCode);
+                result.Meals.Add(new RationMealResult { FeedCode = rule.FeedCode, FeedTitle = rule.FeedCode, MealCode = mealRule.MealCode, MealTitle = meal?.Title ?? mealRule.MealCode, AmountKg = amount * mealRule.PercentOfDailyAmount / 100m });
             }
+        }
         return result;
     }
 
