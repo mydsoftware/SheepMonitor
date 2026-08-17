@@ -1,4 +1,3 @@
-using System.IO;
 using System.Windows;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +16,6 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -27,8 +25,9 @@ public partial class App : Application
         services.AddDbContext<SheepMonitorDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("SheepMonitor")));
         services.AddScoped<IReferenceDataService, ReferenceDataService>();
+        services.AddScoped<ISheepService, SheepService>();
         services.AddTransient<ReferenceDataViewModel>();
-
+        services.AddTransient<SheepViewModel>();
         _services = services.BuildServiceProvider();
     }
 
