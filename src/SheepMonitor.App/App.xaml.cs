@@ -29,11 +29,13 @@ public partial class App : Application
         services.AddScoped<IWeightService, WeightService>();
         services.AddScoped<IGrowthReportService, GrowthReportService>();
         services.AddScoped<IHealthService, HealthService>();
+        services.AddScoped<ITreatmentService, TreatmentService>();
         services.AddTransient<ReferenceDataViewModel>();
         services.AddTransient<SheepViewModel>();
         services.AddTransient<WeightEntryViewModel>();
         services.AddTransient<GrowthReportViewModel>();
         services.AddTransient<HealthViewModel>();
+        services.AddTransient<TreatmentViewModel>();
         _services = services.BuildServiceProvider();
     }
 
