@@ -18,6 +18,7 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
     public DbSet<SheepFeedPlanAssignment> SheepFeedPlanAssignments => Set<SheepFeedPlanAssignment>();
     public DbSet<ReferenceData> ReferenceData => Set<ReferenceData>();
     public DbSet<RationCalculationRule> RationCalculationRules => Set<RationCalculationRule>();
+    public DbSet<RationMealRule> RationMealRules => Set<RationMealRule>();
     public DbSet<RationPeriod> RationPeriods => Set<RationPeriod>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,6 +33,7 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
         modelBuilder.Entity<SheepFeedPlanAssignment>(e => { e.ToTable("SheepFeedPlanAssignments"); e.HasKey(x => x.Id); e.Property(x => x.Notes).HasMaxLength(2000); e.HasIndex(x => new { x.SheepId, x.StartDate }); e.HasOne<Sheep>().WithMany().HasForeignKey(x => x.SheepId).OnDelete(DeleteBehavior.Cascade); e.HasOne<FeedPlan>().WithMany().HasForeignKey(x => x.FeedPlanId).OnDelete(DeleteBehavior.Restrict); });
         modelBuilder.Entity<ReferenceData>(e => { e.ToTable("ReferenceData"); e.HasKey(x => x.Id); e.Property(x => x.Category).HasMaxLength(100).IsRequired(); e.Property(x => x.Code).HasMaxLength(100).IsRequired(); e.Property(x => x.Title).HasMaxLength(200).IsRequired(); e.Property(x => x.Notes).HasMaxLength(2000); e.HasIndex(x => new { x.Category, x.Code }).IsUnique(); e.HasIndex(x => new { x.Category, x.IsActive, x.SortOrder }); });
         modelBuilder.Entity<RationCalculationRule>(e => { e.ToTable("RationCalculationRules"); e.HasKey(x => x.Id); e.Property(x => x.Name).HasMaxLength(150).IsRequired(); e.Property(x => x.Code).HasMaxLength(100).IsRequired(); e.Property(x => x.FeedCode).HasMaxLength(100).IsRequired(); e.Property(x => x.TargetGroupCode).HasMaxLength(100); e.Property(x => x.BasePercent).HasPrecision(8, 3); e.Property(x => x.WeightCoefficient).HasPrecision(10, 5); e.Property(x => x.MinimumKg).HasPrecision(8, 3); e.Property(x => x.MaximumKg).HasPrecision(8, 3); e.Property(x => x.ProteinPercent).HasPrecision(8, 3); e.Property(x => x.EnergyPerKg).HasPrecision(10, 3); e.Property(x => x.DryMatterPercent).HasPrecision(8, 3); e.Property(x => x.Formula).HasMaxLength(1000); e.Property(x => x.Notes).HasMaxLength(2000); e.HasIndex(x => new { x.Code, x.IsActive }); });
+        modelBuilder.Entity<RationMealRule>(e => { e.ToTable("RationMealRules"); e.HasKey(x => x.Id); e.Property(x => x.MealCode).HasMaxLength(100).IsRequired(); e.Property(x => x.PercentOfDailyAmount).HasPrecision(8, 3); e.Property(x => x.Notes).HasMaxLength(2000); e.HasOne<RationCalculationRule>().WithMany().HasForeignKey(x => x.RationCalculationRuleId).OnDelete(DeleteBehavior.Cascade); });
         modelBuilder.Entity<RationPeriod>(e => { e.ToTable("RationPeriods"); e.HasKey(x => x.Id); e.Property(x => x.Name).HasMaxLength(150).IsRequired(); e.Property(x => x.DurationDays).IsRequired(); e.Property(x => x.Notes).HasMaxLength(2000); });
     }
 }
