@@ -1,0 +1,27 @@
+<UserControl x:Class="SheepMonitor.App.Views.ReferenceDataView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="مدیریت اطلاعات پایه" FontSize="28" FontWeight="Bold" Margin="0,0,0,18"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,18">
+            <TextBlock Text="عنوان:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Width="220" Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,12,0"/>
+            <TextBlock Text="کد:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Width="180" Text="{Binding NewCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,12,0"/>
+            <Button Content="افزودن" Width="100"/>
+        </StackPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="کد" Binding="{Binding Code}" Width="180"/>
+                <DataGridTextColumn Header="عنوان" Binding="{Binding Title}" Width="*"/>
+                <DataGridCheckBoxColumn Header="فعال" Binding="{Binding IsActive}" Width="80"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
