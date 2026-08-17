@@ -26,6 +26,7 @@ public partial class App : Application
             options.UseSqlServer(configuration.GetConnectionString("SheepMonitor")));
         services.AddScoped<IReferenceDataService, ReferenceDataService>();
         services.AddScoped<ISheepService, SheepService>();
+        services.AddScoped<IWeightService, WeightService>();
         services.AddTransient<ReferenceDataViewModel>();
         services.AddTransient<SheepViewModel>();
         _services = services.BuildServiceProvider();
