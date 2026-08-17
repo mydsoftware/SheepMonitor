@@ -29,6 +29,7 @@ public partial class App : Application
         services.AddScoped<IWeightService, WeightService>();
         services.AddTransient<ReferenceDataViewModel>();
         services.AddTransient<SheepViewModel>();
+        services.AddTransient<WeightEntryViewModel>();
         _services = services.BuildServiceProvider();
     }
 
