@@ -11,12 +11,14 @@ namespace SheepMonitor.App.ViewModels;
 public sealed class RationViewModel(IRationService rationService, ISheepService sheepService, IReferenceDataService referenceDataService)
 {
     public ObservableCollection<RationCalculationRule> Rules { get; } = [];
+    public ObservableCollection<RationMealRule> MealRules { get; } = [];
     public ObservableCollection<Sheep> Sheep { get; } = [];
     public ObservableCollection<ReferenceData> Feeds { get; } = [];
     public ObservableCollection<ReferenceData> Meals { get; } = [];
     public ObservableCollection<RationDayResult> Results { get; } = [];
     public RationCalculationRule RuleModel { get; } = new() { IsActive = true, MinimumKg = 0, MaximumKg = 1000 };
     public Sheep? SelectedSheep { get; set; }
+    public RationCalculationRule? SelectedRule { get; set; }
     public bool UseAllSheepAverage { get; set; }
     public int DayNumber { get; set; } = 1;
     public DateTime PeriodStartDate { get; set; } = DateTime.Today;
@@ -33,33 +35,27 @@ public sealed class RationViewModel(IRationService rationService, ISheepService 
         foreach (var item in await referenceDataService.GetAsync("وعده غذایی", cancellationToken)) Meals.Add(item);
     }
 
+    public async Task LoadMealRulesAsync(CancellationToken cancellationToken = default)
+    {
+        MealRules.Clear();
+        if (SelectedRule is null) return;
+        foreach (var item in await rationService.GetMealRulesAsync(SelectedRule.Id, cancellationToken)) MealRules.Add(item);
+    }
+
     public async Task SaveRuleAsync(CancellationToken cancellationToken = default)
     {
-        if (RuleModel.Id == 0) Rules.Add(await rationService.AddRuleAsync(RuleModel, cancellationToken));
-        else { var saved = await rationService.UpdateRuleAsync(RuleModel, cancellationToken); var old = Rules.FirstOrDefault(x => x.Id == saved.Id); if (old is not null) Rules[Rules.IndexOf(old)] = saved; }
+        var saved = RuleModel.Id == 0 ? await rationService.AddRuleAsync(RuleModel, cancellationToken) : await rationService.UpdateRuleAsync(RuleModel, cancellationToken);
+        var old = Rules.FirstOrDefault(x => x.Id == saved.Id);
+        if (old is not null) Rules[Rules.IndexOf(old)] = saved; else Rules.Add(saved);
+        SelectedRule = saved;
     }
 
-    public async Task CalculateDayAsync(CancellationToken cancellationToken = default)
-    {
-        Results.Clear();
-        Results.Add(await rationService.CalculateDayAsync(BuildRequest(), cancellationToken));
-    }
+    public async Task SaveMealRuleAsync(RationMealRule rule, CancellationToken cancellationToken = default) => await rationService.SaveMealRuleAsync(rule, cancellationToken);
 
-    public async Task CalculatePeriodAsync(CancellationToken cancellationToken = default)
-    {
-        Results.Clear();
-        foreach (var item in await rationService.CalculatePeriodAsync(BuildRequest(), cancellationToken)) Results.Add(item);
-    }
+    public async Task CalculateDayAsync(CancellationToken cancellationToken = default) { Results.Clear(); Results.Add(await rationService.CalculateDayAsync(BuildRequest(), cancellationToken)); }
+    public async Task CalculatePeriodAsync(CancellationToken cancellationToken = default) { Results.Clear(); foreach (var item in await rationService.CalculatePeriodAsync(BuildRequest(), cancellationToken)) Results.Add(item); }
 
-    private RationCalculationRequest BuildRequest() => new()
-    {
-        SheepId = SelectedSheep?.Id,
-        UseAllSheepAverage = UseAllSheepAverage,
-        WeightKg = WeightKg,
-        DayNumber = DayNumber,
-        PeriodStartDate = PeriodStartDate,
-        PeriodDurationDays = PeriodDurationDays
-    };
+    private RationCalculationRequest BuildRequest() => new() { SheepId = SelectedSheep?.Id, UseAllSheepAverage = UseAllSheepAverage, WeightKg = WeightKg, DayNumber = DayNumber, PeriodStartDate = PeriodStartDate, PeriodDurationDays = PeriodDurationDays };
 
     private static string ToPersianDate(DateTime date)
     {
