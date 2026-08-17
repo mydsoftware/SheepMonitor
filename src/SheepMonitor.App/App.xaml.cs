@@ -16,14 +16,9 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .Build();
-
+        var configuration = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
         var services = new ServiceCollection();
-        services.AddDbContext<SheepMonitorDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("SheepMonitor")));
+        services.AddDbContext<SheepMonitorDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("SheepMonitor")));
         services.AddScoped<IReferenceDataService, ReferenceDataService>();
         services.AddScoped<ISheepService, SheepService>();
         services.AddScoped<IWeightService, WeightService>();
@@ -32,22 +27,13 @@ public partial class App : Application
         services.AddScoped<ITreatmentService, TreatmentService>();
         services.AddScoped<IFeedPlanService, FeedPlanService>();
         services.AddScoped<ISheepFeedPlanService, SheepFeedPlanService>();
-        services.AddTransient<ReferenceDataViewModel>();
-        services.AddTransient<SheepViewModel>();
-        services.AddTransient<WeightEntryViewModel>();
-        services.AddTransient<GrowthReportViewModel>();
-        services.AddTransient<HealthViewModel>();
-        services.AddTransient<TreatmentViewModel>();
-        services.AddTransient<FeedPlanViewModel>();
-        services.AddTransient<SheepFeedPlanAssignmentViewModel>();
+        services.AddScoped<IRationService, RationService>();
+        services.AddTransient<ReferenceDataViewModel>(); services.AddTransient<SheepViewModel>(); services.AddTransient<WeightEntryViewModel>();
+        services.AddTransient<GrowthReportViewModel>(); services.AddTransient<HealthViewModel>(); services.AddTransient<TreatmentViewModel>();
+        services.AddTransient<FeedPlanViewModel>(); services.AddTransient<SheepFeedPlanAssignmentViewModel>(); services.AddTransient<RationViewModel>();
         _services = services.BuildServiceProvider();
     }
 
     public T GetRequiredService<T>() where T : notnull => _services!.GetRequiredService<T>();
-
-    protected override void OnExit(ExitEventArgs e)
-    {
-        _services?.Dispose();
-        base.OnExit(e);
-    }
+    protected override void OnExit(ExitEventArgs e) { _services?.Dispose(); base.OnExit(e); }
 }
