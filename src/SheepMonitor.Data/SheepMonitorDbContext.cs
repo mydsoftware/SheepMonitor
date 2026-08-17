@@ -15,6 +15,7 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
     public DbSet<SheepTreatmentRecord> SheepTreatmentRecords => Set<SheepTreatmentRecord>();
     public DbSet<FeedPlan> FeedPlans => Set<FeedPlan>();
     public DbSet<FeedPlanItem> FeedPlanItems => Set<FeedPlanItem>();
+    public DbSet<SheepFeedPlanAssignment> SheepFeedPlanAssignments => Set<SheepFeedPlanAssignment>();
     public DbSet<ReferenceData> ReferenceData => Set<ReferenceData>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,7 +64,16 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
         modelBuilder.Entity<FeedPlanItem>(e =>
         {
             e.ToTable("FeedPlanItems"); e.HasKey(x => x.Id); e.Property(x => x.FeedName).HasMaxLength(100).IsRequired();
-            e.Property(x => x.AmountKgPerDay).HasPrecision(8, 3); e.HasOne<FeedPlan>().WithMany().HasForeignKey(x => x.FeedPlanId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.AmountKgPerDay).HasPrecision(8, 3); e.Property(x => x.Unit).HasMaxLength(50).IsRequired();
+            e.Property(x => x.Notes).HasMaxLength(2000); e.HasOne<FeedPlan>().WithMany().HasForeignKey(x => x.FeedPlanId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<SheepFeedPlanAssignment>(e =>
+        {
+            e.ToTable("SheepFeedPlanAssignments"); e.HasKey(x => x.Id);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.HasIndex(x => new { x.SheepId, x.StartDate });
+            e.HasOne<Sheep>().WithMany().HasForeignKey(x => x.SheepId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<FeedPlan>().WithMany().HasForeignKey(x => x.FeedPlanId).OnDelete(DeleteBehavior.Restrict);
         });
         modelBuilder.Entity<ReferenceData>(e =>
         {
