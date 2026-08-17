@@ -13,6 +13,7 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
     public DbSet<HealthRecord> HealthRecords => Set<HealthRecord>();
     public DbSet<FeedPlan> FeedPlans => Set<FeedPlan>();
     public DbSet<FeedPlanItem> FeedPlanItems => Set<FeedPlanItem>();
+    public DbSet<ReferenceData> ReferenceData => Set<ReferenceData>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +45,14 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
         {
             e.ToTable("FeedPlanItems"); e.HasKey(x => x.Id); e.Property(x => x.FeedName).HasMaxLength(100).IsRequired();
             e.Property(x => x.AmountKgPerDay).HasPrecision(8, 3); e.HasOne<FeedPlan>().WithMany().HasForeignKey(x => x.FeedPlanId).OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<ReferenceData>(e =>
+        {
+            e.ToTable("ReferenceData"); e.HasKey(x => x.Id);
+            e.Property(x => x.Category).HasMaxLength(100).IsRequired(); e.Property(x => x.Code).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Title).HasMaxLength(200).IsRequired(); e.Property(x => x.Notes).HasMaxLength(2000);
+            e.HasIndex(x => new { x.Category, x.Code }).IsUnique();
+            e.HasIndex(x => new { x.Category, x.IsActive, x.SortOrder });
         });
     }
 }
