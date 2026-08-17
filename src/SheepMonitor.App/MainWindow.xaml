@@ -13,7 +13,7 @@
                 <TextBlock Text="پایش گوسفندان" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
                 <Button Content="داشبورد" Margin="0,4" Padding="12"/>
                 <Button Content="گوسفندان" Margin="0,4" Padding="12"/>
-                <Button Content="وزن‌گیری" Margin="0,4" Padding="12"/>
+                <Button Content="وزن‌گیری" Margin="0,4" Padding="12" Click="WeightEntry_Click"/>
                 <Button Content="سلامت و بیماری" Margin="0,4" Padding="12"/>
                 <Button Content="برنامه غذایی" Margin="0,4" Padding="12"/>
                 <Button Content="اطلاعات پایه" Margin="0,4" Padding="12" Click="ReferenceData_Click"/>
