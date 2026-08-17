@@ -30,12 +30,16 @@ public partial class App : Application
         services.AddScoped<IGrowthReportService, GrowthReportService>();
         services.AddScoped<IHealthService, HealthService>();
         services.AddScoped<ITreatmentService, TreatmentService>();
+        services.AddScoped<IFeedPlanService, FeedPlanService>();
+        services.AddScoped<ISheepFeedPlanService, SheepFeedPlanService>();
         services.AddTransient<ReferenceDataViewModel>();
         services.AddTransient<SheepViewModel>();
         services.AddTransient<WeightEntryViewModel>();
         services.AddTransient<GrowthReportViewModel>();
         services.AddTransient<HealthViewModel>();
         services.AddTransient<TreatmentViewModel>();
+        services.AddTransient<FeedPlanViewModel>();
+        services.AddTransient<SheepFeedPlanAssignmentViewModel>();
         _services = services.BuildServiceProvider();
     }
 
