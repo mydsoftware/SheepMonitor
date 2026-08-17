@@ -5,7 +5,7 @@ using SheepMonitor.Core.Services;
 namespace SheepMonitor.Data.Services;
 
 /// <summary>
-/// موتور محاسبه جیره که قوانین را از SQL Server دریافت می‌کند.
+/// موتور محاسبه جیره که قوانین، مواد و وعده‌ها را از SQL Server دریافت می‌کند.
 /// </summary>
 public sealed class RationService(SheepMonitorDbContext db) : IRationService
 {
@@ -14,25 +14,20 @@ public sealed class RationService(SheepMonitorDbContext db) : IRationService
 
     public async Task<RationCalculationRule> AddRuleAsync(RationCalculationRule rule, CancellationToken cancellationToken = default)
     {
-        Validate(rule);
-        db.RationCalculationRules.Add(rule);
-        await db.SaveChangesAsync(cancellationToken);
-        return rule;
+        Validate(rule); db.RationCalculationRules.Add(rule); await db.SaveChangesAsync(cancellationToken); return rule;
     }
 
     public async Task<RationCalculationRule> UpdateRuleAsync(RationCalculationRule rule, CancellationToken cancellationToken = default)
     {
-        Validate(rule);
-        db.RationCalculationRules.Update(rule);
-        await db.SaveChangesAsync(cancellationToken);
-        return rule;
+        Validate(rule); db.RationCalculationRules.Update(rule); await db.SaveChangesAsync(cancellationToken); return rule;
     }
 
     public async Task<RationDayResult> CalculateDayAsync(RationCalculationRequest request, CancellationToken cancellationToken = default)
     {
         var weight = await ResolveWeightAsync(request, cancellationToken);
         var rules = await GetRulesAsync(cancellationToken);
-        return Calculate(request.DayNumber, request.PeriodStartDate.AddDays(request.DayNumber - 1), weight, rules);
+        var meals = await GetMealsAsync(cancellationToken);
+        return Calculate(request.DayNumber, request.PeriodStartDate.AddDays(request.DayNumber - 1), weight, rules, meals);
     }
 
     public async Task<IReadOnlyList<RationDayResult>> CalculatePeriodAsync(RationCalculationRequest request, CancellationToken cancellationToken = default)
@@ -40,8 +35,8 @@ public sealed class RationService(SheepMonitorDbContext db) : IRationService
         if (request.PeriodDurationDays <= 0) throw new ArgumentOutOfRangeException(nameof(request.PeriodDurationDays));
         var weight = await ResolveWeightAsync(request, cancellationToken);
         var rules = await GetRulesAsync(cancellationToken);
-        return Enumerable.Range(1, request.PeriodDurationDays)
-            .Select(day => Calculate(day, request.PeriodStartDate.AddDays(day - 1), weight, rules)).ToList();
+        var meals = await GetMealsAsync(cancellationToken);
+        return Enumerable.Range(1, request.PeriodDurationDays).Select(day => Calculate(day, request.PeriodStartDate.AddDays(day - 1), weight, rules, meals)).ToList();
     }
 
     private async Task<decimal> ResolveWeightAsync(RationCalculationRequest request, CancellationToken cancellationToken)
@@ -57,26 +52,25 @@ public sealed class RationService(SheepMonitorDbContext db) : IRationService
         return weights.Average();
     }
 
-    private static RationDayResult Calculate(int day, DateTime date, decimal weight, IReadOnlyList<RationCalculationRule> rules)
+    private async Task<IReadOnlyList<ReferenceData>> GetMealsAsync(CancellationToken cancellationToken) =>
+        await db.ReferenceData.AsNoTracking().Where(x => x.Category == "وعده غذایی" && x.IsActive).OrderBy(x => x.SortOrder).ToListAsync(cancellationToken);
+
+    private static RationDayResult Calculate(int day, DateTime date, decimal weight, IReadOnlyList<RationCalculationRule> rules, IReadOnlyList<ReferenceData> meals)
     {
-        var values = rules.Select(rule => new
-        {
-            rule.Code,
-            Value = Math.Clamp(rule.BasePercent / 100m * weight + rule.WeightCoefficient * weight, rule.MinimumKg, rule.MaximumKg)
-        }).ToDictionary(x => x.Code, x => x.Value, StringComparer.OrdinalIgnoreCase);
-        return new RationDayResult
-        {
-            DayNumber = day,
-            Date = date,
-            HayKg = values.GetValueOrDefault("HAY"),
-            StrawKg = values.GetValueOrDefault("STRAW"),
-            ConcentrateKg = values.GetValueOrDefault("CONCENTRATE")
-        };
+        var result = new RationDayResult { DayNumber = day, Date = date };
+        foreach (var meal in meals)
+            foreach (var rule in rules)
+            {
+                var amount = Math.Clamp(rule.BasePercent / 100m * weight + rule.WeightCoefficient * weight, rule.MinimumKg, rule.MaximumKg);
+                result.Meals.Add(new RationMealResult { FeedCode = rule.FeedCode, FeedTitle = rule.FeedCode, MealCode = meal.Code, MealTitle = meal.Title, AmountKg = amount });
+            }
+        return result;
     }
 
     private static void Validate(RationCalculationRule rule)
     {
         if (string.IsNullOrWhiteSpace(rule.Code)) throw new ArgumentException("کد قانون الزامی است.");
+        if (string.IsNullOrWhiteSpace(rule.FeedCode)) throw new ArgumentException("کد ماده غذایی الزامی است.");
         if (rule.MinimumKg < 0 || rule.MaximumKg < rule.MinimumKg) throw new ArgumentException("حداقل و حداکثر مقدار قانون نامعتبر است.");
     }
 }
