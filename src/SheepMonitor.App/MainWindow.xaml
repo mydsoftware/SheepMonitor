@@ -1,11 +1,24 @@
 <Window x:Class="SheepMonitor.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="سامانه پایش گوسفندان" Height="450" Width="800">
-    <Grid Margin="24">
-        <StackPanel>
-            <TextBlock Text="سامانه پایش گوسفندان" FontSize="28" FontWeight="Bold" />
-            <TextBlock Text="نسخه اولیه — مدیریت دام، وزن، سلامت و تغذیه" Margin="0,12,0,0" FontSize="16" />
-        </StackPanel>
+        Title="پایش گوسفندان" Height="720" Width="1200"
+        FlowDirection="RightToLeft">
+    <Grid Background="#F5F7FA">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" Background="#1F2937" Padding="18">
+            <StackPanel>
+                <TextBlock Text="پایش گوسفندان" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
+                <Button Content="داشبورد" Margin="0,4" Padding="12"/>
+                <Button Content="گوسفندان" Margin="0,4" Padding="12"/>
+                <Button Content="وزن‌گیری" Margin="0,4" Padding="12"/>
+                <Button Content="سلامت و بیماری" Margin="0,4" Padding="12"/>
+                <Button Content="برنامه غذایی" Margin="0,4" Padding="12"/>
+                <Button Content="اطلاعات پایه" Margin="0,4" Padding="12" Click="ReferenceData_Click"/>
+            </StackPanel>
+        </Border>
+        <Frame x:Name="ContentFrame" Grid.Column="1" NavigationUIVisibility="Hidden" Margin="20"/>
     </Grid>
 </Window>
