@@ -2,6 +2,7 @@ namespace SheepMonitor.Core.Models;
 
 /// <summary>
 /// اطلاعات پایه یک گوسفند.
+/// مقادیر قابل تغییر مانند جنسیت و وضعیت سلامت از داده‌های مرجع SQL Server انتخاب می‌شوند.
 /// </summary>
 public sealed class Sheep
 {
@@ -13,6 +14,6 @@ public sealed class Sheep
     public DateTime InitialWeighingDate { get; set; }
     public decimal InitialWeightKg { get; set; }
     public bool IsSick { get; set; }
-    public string HealthStatus { get; set; } = "سالم";
+    public string HealthStatus { get; set; } = string.Empty;
     public string? Notes { get; set; }
 }
