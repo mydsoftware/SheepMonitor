@@ -18,4 +18,11 @@ public partial class MainWindow : Window
         await viewModel.LoadAsync();
         ContentFrame.Content = new ReferenceDataView { DataContext = viewModel };
     }
+
+    private async void Health_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = ((App)Application.Current).GetRequiredService<HealthViewModel>();
+        await viewModel.LoadAsync();
+        ContentFrame.Content = new HealthView { DataContext = viewModel };
+    }
 }
