@@ -1,0 +1,51 @@
+CREATE TABLE Sheep (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Number NVARCHAR(50) NOT NULL UNIQUE,
+    ImagePath NVARCHAR(500) NULL,
+    Gender NVARCHAR(20) NOT NULL,
+    BirthDate DATE NULL,
+    InitialWeighingDate DATETIME2 NOT NULL,
+    InitialWeightKg DECIMAL(8,2) NOT NULL,
+    IsSick BIT NOT NULL DEFAULT 0,
+    HealthStatus NVARCHAR(30) NOT NULL DEFAULT N'سالم',
+    Notes NVARCHAR(2000) NULL
+);
+
+CREATE TABLE WeightRecords (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    SheepId INT NOT NULL,
+    WeighedAt DATETIME2 NOT NULL,
+    WeightKg DECIMAL(8,2) NOT NULL,
+    Notes NVARCHAR(2000) NULL,
+    CONSTRAINT FK_WeightRecords_Sheep FOREIGN KEY (SheepId) REFERENCES Sheep(Id) ON DELETE CASCADE
+);
+CREATE INDEX IX_WeightRecords_Sheep_Date ON WeightRecords(SheepId, WeighedAt);
+
+CREATE TABLE HealthRecords (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    SheepId INT NOT NULL,
+    RecordedAt DATETIME2 NOT NULL,
+    IsSick BIT NOT NULL,
+    Status NVARCHAR(30) NOT NULL,
+    DiseaseName NVARCHAR(200) NULL,
+    Symptoms NVARCHAR(2000) NULL,
+    Treatment NVARCHAR(2000) NULL,
+    Notes NVARCHAR(2000) NULL,
+    CONSTRAINT FK_HealthRecords_Sheep FOREIGN KEY (SheepId) REFERENCES Sheep(Id) ON DELETE CASCADE
+);
+CREATE INDEX IX_HealthRecords_Sheep_Date ON HealthRecords(SheepId, RecordedAt);
+
+CREATE TABLE FeedPlans (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(150) NOT NULL,
+    TargetGroup NVARCHAR(100) NULL,
+    Notes NVARCHAR(2000) NULL
+);
+
+CREATE TABLE FeedPlanItems (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    FeedPlanId INT NOT NULL,
+    FeedName NVARCHAR(100) NOT NULL,
+    AmountKgPerDay DECIMAL(8,3) NOT NULL,
+    CONSTRAINT FK_FeedPlanItems_FeedPlans FOREIGN KEY (FeedPlanId) REFERENCES FeedPlans(Id) ON DELETE CASCADE
+);
