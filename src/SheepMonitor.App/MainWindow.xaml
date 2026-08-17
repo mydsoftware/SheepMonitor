@@ -4,10 +4,7 @@
         Title="پایش گوسفندان" Height="720" Width="1200"
         FlowDirection="RightToLeft">
     <Grid Background="#F5F7FA">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="230"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="230"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Border Grid.Column="0" Background="#1F2937" Padding="18">
             <StackPanel>
                 <TextBlock Text="پایش گوسفندان" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
@@ -16,7 +13,8 @@
                 <Button Content="وزن‌گیری" Margin="0,4" Padding="12" Click="WeightEntry_Click"/>
                 <Button Content="سلامت و بیماری" Margin="0,4" Padding="12" Click="Health_Click"/>
                 <Button Content="درمان" Margin="0,4" Padding="12" Click="Treatment_Click"/>
-                <Button Content="برنامه غذایی" Margin="0,4" Padding="12"/>
+                <Button Content="برنامه غذایی" Margin="0,4" Padding="12" Click="FeedPlan_Click"/>
+                <Button Content="تخصیص جیره" Margin="0,4" Padding="12" Click="FeedAssignment_Click"/>
                 <Button Content="اطلاعات پایه" Margin="0,4" Padding="12" Click="ReferenceData_Click"/>
             </StackPanel>
         </Border>
