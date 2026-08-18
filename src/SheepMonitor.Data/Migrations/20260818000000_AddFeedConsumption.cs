@@ -12,16 +12,20 @@ public partial class AddFeedConsumption : Migration
             name: "FeedConsumptionRecords",
             columns: table => new
             {
-                Id = table.Column<int>(type: "int", nullable: false)
+                Id = table.Column<long>(type: "bigint", nullable: false)
                     .Annotation("SqlServer:Identity", "1, 1"),
-                SheepId = table.Column<int>(type: "int", nullable: false),
-                Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                SheepId = table.Column<long>(type: "bigint", nullable: true),
+                ConsumedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                FeedCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                FeedTitle = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                MealCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                ActualAmountKg = table.Column<decimal>(type: "decimal(10,3)", precision: 10, scale: 3, nullable: false),
+                WasteAmountKg = table.Column<decimal>(type: "decimal(10,3)", precision: 10, scale: 3, nullable: true),
                 Notes = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true)
             },
             constraints: table =>
             {
                 table.PrimaryKey("PK_FeedConsumptionRecords", x => x.Id);
-                table.ForeignKey("FK_FeedConsumptionRecords_Sheep_SheepId", x => x.SheepId, "Sheep", "Id", onDelete: ReferentialAction.Cascade);
             });
 
         migrationBuilder.CreateTable(
@@ -30,7 +34,7 @@ public partial class AddFeedConsumption : Migration
             {
                 Id = table.Column<int>(type: "int", nullable: false)
                     .Annotation("SqlServer:Identity", "1, 1"),
-                FeedConsumptionRecordId = table.Column<int>(type: "int", nullable: false),
+                FeedConsumptionRecordId = table.Column<long>(type: "bigint", nullable: false),
                 FeedCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                 PlannedKg = table.Column<decimal>(type: "decimal(10,3)", precision: 10, scale: 3, nullable: false),
                 ActualKg = table.Column<decimal>(type: "decimal(10,3)", precision: 10, scale: 3, nullable: false),
@@ -42,7 +46,7 @@ public partial class AddFeedConsumption : Migration
                 table.ForeignKey("FK_FeedConsumptionItems_FeedConsumptionRecords_FeedConsumptionRecordId", x => x.FeedConsumptionRecordId, "FeedConsumptionRecords", "Id", onDelete: ReferentialAction.Cascade);
             });
 
-        migrationBuilder.CreateIndex("IX_FeedConsumptionRecords_Date_SheepId", "FeedConsumptionRecords", new[] { "Date", "SheepId" });
+        migrationBuilder.CreateIndex("IX_FeedConsumptionRecords_ConsumedAt_SheepId", "FeedConsumptionRecords", new[] { "ConsumedAt", "SheepId" });
         migrationBuilder.CreateIndex("IX_FeedConsumptionItems_FeedConsumptionRecordId_FeedCode", "FeedConsumptionItems", new[] { "FeedConsumptionRecordId", "FeedCode" });
     }
 
