@@ -1,22 +1,70 @@
 using System.Windows;
 using System.Windows.Controls;
+using SheepMonitor.Core.Models;
+using SheepMonitor.Core.Services;
 
 namespace SheepMonitor.App.Views;
 
 /// <summary>
-/// رویدادهای نمایش نتیجه محاسبه جیره.
+/// اجرای واقعی محاسبه جیره و نمایش نتیجه آن.
 /// </summary>
 public partial class RationResultView : UserControl
 {
-    public RationResultView() => InitializeComponent();
+    private readonly IRationService rationService;
+    private readonly List<RationDayResult> results = [];
 
-    private void CalculateDay_Click(object sender, RoutedEventArgs e)
+    public RationResultView()
     {
-        MessageBox.Show("محاسبه روز از موتور جیره انجام می‌شود.", "جیره", MessageBoxButton.OK, MessageBoxImage.Information);
+        InitializeComponent();
+        rationService = ((App)Application.Current).GetRequiredService<IRationService>();
+        DataContext = this;
     }
 
-    private void CalculatePeriod_Click(object sender, RoutedEventArgs e)
+    public int SelectedDayNumber { get; set; } = 1;
+    public int SheepId { get; set; }
+    public bool UseAllSheepAverage { get; set; }
+    public decimal? WeightKg { get; set; }
+    public DateTime PeriodStartDate { get; set; } = DateTime.Today;
+    public int PeriodDurationDays { get; set; } = 30;
+    public string CalculationTarget { get; set; } = "SingleSheep";
+    public IEnumerable<RationDayResult> Results => results;
+
+    private async void CalculateDay_Click(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("محاسبه کل دوره از موتور جیره انجام می‌شود.", "جیره", MessageBoxButton.OK, MessageBoxImage.Information);
+        await CalculateAsync(false);
+    }
+
+    private async void CalculatePeriod_Click(object sender, RoutedEventArgs e)
+    {
+        await CalculateAsync(true);
+    }
+
+    private async Task CalculateAsync(bool wholePeriod)
+    {
+        try
+        {
+            UseAllSheepAverage = CalculationTarget == "AverageHerdWeight";
+            var request = new RationCalculationRequest
+            {
+                SheepId = UseAllSheepAverage ? null : SheepId,
+                UseAllSheepAverage = UseAllSheepAverage,
+                WeightKg = WeightKg,
+                DayNumber = SelectedDayNumber,
+                PeriodStartDate = PeriodStartDate,
+                PeriodDurationDays = PeriodDurationDays
+            };
+
+            var calculated = wholePeriod
+                ? await rationService.CalculatePeriodAsync(request)
+                : [await rationService.CalculateDayAsync(request)];
+
+            results.Clear();
+            results.AddRange(calculated);
+            ResultsGrid.Items.Refresh();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "خطا در محاسبه جیره", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 }
