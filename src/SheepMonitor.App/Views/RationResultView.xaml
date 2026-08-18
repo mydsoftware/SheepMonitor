@@ -28,15 +28,13 @@
                 <Button Content="محاسبه کل دوره" Click="CalculatePeriod_Click" Padding="14,6"/>
             </StackPanel>
         </StackPanel>
-        <DataGrid x:Name="ResultsGrid" Grid.Row="2" ItemsSource="{Binding Results}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid x:Name="ResultsGrid" Grid.Row="2" ItemsSource="{Binding DisplayResults}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="روز" Binding="{Binding DayNumber}"/>
-                <DataGridTextColumn Header="تاریخ" Binding="{Binding Date, StringFormat=yyyy/MM/dd}"/>
-                <DataGridTextColumn Header="وعده" Binding="{Binding MealCode}"/>
-                <DataGridTextColumn Header="ماده غذایی" Binding="{Binding FeedCode}"/>
-                <DataGridTextColumn Header="وزن مبنا" Binding="{Binding WeightKg, StringFormat=N2}"/>
-                <DataGridTextColumn Header="مقدار روزانه (کیلوگرم)" Binding="{Binding DailyAmountKg, StringFormat=N3}"/>
-                <DataGridTextColumn Header="مقدار وعده (کیلوگرم)" Binding="{Binding MealAmountKg, StringFormat=N3}"/>
+                <DataGridTextColumn Header="تاریخ شمسی" Binding="{Binding PersianDate}"/>
+                <DataGridTextColumn Header="وعده" Binding="{Binding MealTitle}"/>
+                <DataGridTextColumn Header="ماده غذایی" Binding="{Binding FeedTitle}"/>
+                <DataGridTextColumn Header="مقدار (کیلوگرم)" Binding="{Binding AmountKg, StringFormat=N3}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
