@@ -12,6 +12,7 @@
                 <Button Content="برنامه غذایی" Margin="0,4" Padding="12" Click="FeedPlan_Click"/>
                 <Button Content="تخصیص جیره" Margin="0,4" Padding="12" Click="FeedAssignment_Click"/>
                 <Button Content="موتور جیره پویا" Margin="0,4" Padding="12" Click="Ration_Click"/>
+                <Button Content="تنظیم قوانین جیره" Margin="0,4" Padding="12" Click="RationRules_Click"/>
                 <Button Content="اطلاعات پایه" Margin="0,4" Padding="12" Click="ReferenceData_Click"/>
             </StackPanel>
         </Border>
