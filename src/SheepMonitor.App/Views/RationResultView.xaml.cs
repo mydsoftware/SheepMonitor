@@ -6,12 +6,13 @@ using SheepMonitor.Core.Services;
 namespace SheepMonitor.App.Views;
 
 /// <summary>
-/// اجرای واقعی محاسبه جیره و نمایش نتیجه آن.
+/// اجرای واقعی محاسبه جیره و تبدیل نتیجه به ردیف‌های قابل نمایش.
 /// </summary>
 public partial class RationResultView : UserControl
 {
     private readonly IRationService rationService;
     private readonly List<RationDayResult> results = [];
+    private readonly List<RationMealDisplayRow> displayResults = [];
 
     public RationResultView()
     {
@@ -27,17 +28,11 @@ public partial class RationResultView : UserControl
     public DateTime PeriodStartDate { get; set; } = DateTime.Today;
     public int PeriodDurationDays { get; set; } = 30;
     public string CalculationTarget { get; set; } = "SingleSheep";
-    public IEnumerable<RationDayResult> Results => results;
+    public IEnumerable<RationMealDisplayRow> DisplayResults => displayResults;
 
-    private async void CalculateDay_Click(object sender, RoutedEventArgs e)
-    {
-        await CalculateAsync(false);
-    }
+    private async void CalculateDay_Click(object sender, RoutedEventArgs e) => await CalculateAsync(false);
 
-    private async void CalculatePeriod_Click(object sender, RoutedEventArgs e)
-    {
-        await CalculateAsync(true);
-    }
+    private async void CalculatePeriod_Click(object sender, RoutedEventArgs e) => await CalculateAsync(true);
 
     private async Task CalculateAsync(bool wholePeriod)
     {
@@ -60,6 +55,17 @@ public partial class RationResultView : UserControl
 
             results.Clear();
             results.AddRange(calculated);
+            displayResults.Clear();
+            foreach (var day in results)
+                foreach (var meal in day.Meals)
+                    displayResults.Add(new RationMealDisplayRow
+                    {
+                        DayNumber = day.DayNumber,
+                        PersianDate = day.PersianDate,
+                        MealTitle = meal.MealTitle,
+                        FeedTitle = meal.FeedTitle,
+                        AmountKg = meal.AmountKg
+                    });
             ResultsGrid.Items.Refresh();
         }
         catch (Exception ex)
