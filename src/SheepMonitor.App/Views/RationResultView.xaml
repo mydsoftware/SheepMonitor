@@ -12,7 +12,7 @@
         <StackPanel Grid.Row="1" Margin="0,18,0,18">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="نوع محاسبه:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <ComboBox Width="180" SelectedValue="{Binding CalculationTarget}">
+                <ComboBox Width="180" SelectedValue="{Binding CalculationTarget, UpdateSourceTrigger=PropertyChanged}">
                     <ComboBoxItem Content="یک گوسفند" Tag="SingleSheep"/>
                     <ComboBoxItem Content="میانگین وزن گله" Tag="AverageHerdWeight"/>
                 </ComboBox>
@@ -20,7 +20,7 @@
                 <TextBox Width="100" Text="{Binding SheepId, UpdateSourceTrigger=PropertyChanged}"/>
                 <TextBlock Text="روز جیره:" VerticalAlignment="Center" Margin="20,0,8,0"/>
                 <TextBox Width="70" Text="{Binding SelectedDayNumber, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBlock Text="وزن مبنا:" VerticalAlignment="Center" Margin="20,0,8,0"/>
+                <TextBlock Text="وزن دستی (اختیاری):" VerticalAlignment="Center" Margin="20,0,8,0"/>
                 <TextBox Width="90" Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
@@ -28,10 +28,10 @@
                 <Button Content="محاسبه کل دوره" Click="CalculatePeriod_Click" Padding="14,6"/>
             </StackPanel>
         </StackPanel>
-        <DataGrid Grid.Row="2" ItemsSource="{Binding Results}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid x:Name="ResultsGrid" Grid.Row="2" ItemsSource="{Binding Results}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="روز" Binding="{Binding DayNumber}"/>
-                <DataGridTextColumn Header="تاریخ شمسی" Binding="{Binding PersianDate}"/>
+                <DataGridTextColumn Header="تاریخ" Binding="{Binding Date, StringFormat=yyyy/MM/dd}"/>
                 <DataGridTextColumn Header="وعده" Binding="{Binding MealCode}"/>
                 <DataGridTextColumn Header="ماده غذایی" Binding="{Binding FeedCode}"/>
                 <DataGridTextColumn Header="وزن مبنا" Binding="{Binding WeightKg, StringFormat=N2}"/>
