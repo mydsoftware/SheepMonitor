@@ -35,8 +35,8 @@ public sealed class RationViewModel(IRationService rationService, ISheepService 
         foreach (var item in await rationService.GetRulesAsync(cancellationToken)) Rules.Add(item);
         foreach (var item in await rationService.GetPeriodsAsync(cancellationToken)) Periods.Add(item);
         foreach (var item in await sheepService.GetAllAsync(cancellationToken)) Sheep.Add(item);
-        foreach (var item in await referenceDataService.GetAsync("ماده غذایی", cancellationToken)) Feeds.Add(item);
-        foreach (var item in await referenceDataService.GetAsync("وعده غذایی", cancellationToken)) Meals.Add(item);
+        foreach (var item in await referenceDataService.GetAsync("Feed", cancellationToken)) Feeds.Add(item);
+        foreach (var item in await referenceDataService.GetAsync("Meal", cancellationToken)) Meals.Add(item);
         var activePeriod = Periods.FirstOrDefault(x => x.IsActive); if (activePeriod is not null) { PeriodStartDate = activePeriod.StartDate; PeriodDurationDays = activePeriod.DurationDays; }
     }
     public async Task LoadMealRulesAsync(CancellationToken cancellationToken = default) { MealRules.Clear(); if (SelectedRule is null) return; foreach (var item in await rationService.GetMealRulesAsync(SelectedRule.Id, cancellationToken)) MealRules.Add(item); }
