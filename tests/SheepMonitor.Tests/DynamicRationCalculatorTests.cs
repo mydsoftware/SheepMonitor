@@ -1,5 +1,6 @@
 using SheepMonitor.Core.Models;
 using SheepMonitor.Core.Services;
+using Xunit;
 
 namespace SheepMonitor.Tests;
 
