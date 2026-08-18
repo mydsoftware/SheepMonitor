@@ -1,0 +1,25 @@
+name: تست خودکار پروژه
+
+on:
+  push:
+    branches: [ main, agent/database-model ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: اجرای تست‌های پروژه
+    runs-on: ubuntu-latest
+    steps:
+      - name: دریافت کد پروژه
+        uses: actions/checkout@v4
+      - name: نصب دات‌نت
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: بازیابی وابستگی‌ها
+        run: dotnet restore
+      - name: ساخت پروژه
+        run: dotnet build --no-restore --configuration Release
+      - name: اجرای تست‌ها
+        run: dotnet test --no-build --configuration Release --verbosity normal
