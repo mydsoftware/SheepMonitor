@@ -13,17 +13,3 @@ public sealed class FeedPlan
     public bool IsActive { get; set; }
     public string? Notes { get; set; }
 }
-
-/// <summary>
-/// یک ماده غذایی و مقدار مصرف روزانه در برنامه غذایی.
-/// </summary>
-public sealed class FeedPlanItem
-{
-    public int Id { get; set; }
-    public int FeedPlanId { get; set; }
-    public string FeedCode { get; set; } = string.Empty;
-    public decimal AmountPerDay { get; set; }
-    public string UnitCode { get; set; } = string.Empty;
-    public int MealsPerDay { get; set; }
-    public string? Notes { get; set; }
-}
