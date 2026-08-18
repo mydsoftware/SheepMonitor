@@ -10,12 +10,12 @@ namespace SheepMonitor.App.ViewModels;
 public sealed class HealthViewModel(ISheepService sheepService, IHealthService healthService, IReferenceDataService referenceDataService)
 {
     public ObservableCollection<Sheep> Sheep { get; } = [];
-    public ObservableCollection<SheepHealthRecord> Records { get; } = [];
+    public ObservableCollection<HealthRecord> Records { get; } = [];
     public IReadOnlyList<ReferenceData> Diseases { get; private set; } = [];
     public IReadOnlyList<ReferenceData> Symptoms { get; private set; } = [];
     public IReadOnlyList<ReferenceData> Severities { get; private set; } = [];
     public Sheep? SelectedSheep { get; set; }
-    public SheepHealthRecord Model { get; } = new() { StartedAt = DateTime.Now };
+    public HealthRecord Model { get; } = new() { RecordedAt = DateTime.Now };
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
