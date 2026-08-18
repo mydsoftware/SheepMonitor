@@ -24,7 +24,7 @@
                 <TextBlock Text="درصد ماده خشک" Margin="0,8,0,3"/><TextBox Text="{Binding SelectedRule.DryMatterPercent, UpdateSourceTrigger=PropertyChanged}"/>
                 <TextBlock Text="فرمول محاسبه" Margin="0,8,0,3"/><TextBox Text="{Binding SelectedRule.Formula, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="70"/>
                 <TextBlock Text="درصد وعده‌ها" FontSize="18" FontWeight="Bold" Margin="0,18,0,8"/>
-                <DataGrid ItemsSource="{Binding Meals}" AutoGenerateColumns="False" Height="180">
+                <DataGrid x:Name="MealsGrid" ItemsSource="{Binding Meals}" AutoGenerateColumns="False" Height="180">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="وعده" Binding="{Binding MealCode, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
                         <DataGridTextColumn Header="درصد روزانه" Binding="{Binding PercentOfDailyAmount, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
