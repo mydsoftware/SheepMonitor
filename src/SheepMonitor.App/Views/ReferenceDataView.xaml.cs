@@ -27,9 +27,15 @@ public partial class ReferenceDataView : UserControl
         await viewModel.LoadAsync();
     }
 
-    private async void Save_Click(object sender, RoutedEventArgs e)
+    private async void Save_Click(object sender, RoutedEventArgs e) => await viewModel.SaveAsync();
+
+    private async void Update_Click(object sender, RoutedEventArgs e) => await viewModel.UpdateSelectedAsync();
+
+    private void CancelEdit_Click(object sender, RoutedEventArgs e) => viewModel.ClearEditor();
+
+    private void Edit_Click(object sender, RoutedEventArgs e)
     {
-        await viewModel.SaveAsync();
+        if (sender is Button { Tag: ReferenceData item }) viewModel.BeginEdit(item);
     }
 
     private async void Disable_Click(object sender, RoutedEventArgs e)
