@@ -12,7 +12,7 @@ public sealed class FeedConsumptionRecord
     public string MealCode { get; set; } = string.Empty;
     public decimal ActualAmountKg { get; set; }
     public decimal? WasteAmountKg { get; set; }
-    public long? SheepId { get; set; }
+    public int? SheepId { get; set; }
     public string? Notes { get; set; }
 
     public decimal NetConsumedKg => Math.Max(0m, ActualAmountKg - (WasteAmountKg ?? 0m));
