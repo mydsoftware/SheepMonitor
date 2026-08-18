@@ -5,7 +5,7 @@ using SheepMonitor.Core.Services;
 namespace SheepMonitor.Data.Services;
 
 /// <summary>
-/// موتور محاسبه جیره که قوانین، وعده‌ها، دوره و وزن را از SQL Server دریافت می‌کند.
+/// موتور محاسبه جیره که قوانین، وعده‌ها، مواد غذایی و وزن را از SQL Server دریافت می‌کند.
 /// </summary>
 public sealed class RationService(SheepMonitorDbContext db, IRationFormulaEvaluator formulaEvaluator) : IRationService
 {
@@ -68,16 +68,20 @@ public sealed class RationService(SheepMonitorDbContext db, IRationFormulaEvalua
     {
         var mealRules = await db.RationMealRules.AsNoTracking().Where(x => x.IsActive).ToListAsync(cancellationToken);
         var mealCodes = mealRules.Select(x => x.MealCode).Distinct().ToList();
-        var meals = await db.ReferenceData.AsNoTracking().Where(x => mealCodes.Contains(x.Code) && x.IsActive).ToListAsync(cancellationToken);
+        var feedCodes = rules.Select(x => x.FeedCode).Distinct().ToList();
+        var references = await db.ReferenceData.AsNoTracking()
+            .Where(x => x.IsActive && ((x.Category == "Meal" && mealCodes.Contains(x.Code)) || (x.Category == "Feed" && feedCodes.Contains(x.Code))))
+            .ToListAsync(cancellationToken);
         var result = new RationDayResult { DayNumber = day, Date = date };
         foreach (var rule in rules)
         {
             var dailyAmount = formulaEvaluator.Evaluate(rule.Formula, weight, rule.BasePercent, rule.WeightCoefficient);
             dailyAmount = Math.Clamp(dailyAmount, rule.MinimumKg, rule.MaximumKg);
+            var feedTitle = references.FirstOrDefault(x => x.Category == "Feed" && x.Code == rule.FeedCode)?.Title ?? rule.FeedCode;
             foreach (var mealRule in mealRules.Where(x => x.RationCalculationRuleId == rule.Id))
             {
-                var meal = meals.FirstOrDefault(x => x.Code == mealRule.MealCode);
-                result.Meals.Add(new RationMealResult { FeedCode = rule.FeedCode, FeedTitle = rule.FeedCode, MealCode = mealRule.MealCode, MealTitle = meal?.Title ?? mealRule.MealCode, AmountKg = dailyAmount * mealRule.PercentOfDailyAmount / 100m });
+                var mealTitle = references.FirstOrDefault(x => x.Category == "Meal" && x.Code == mealRule.MealCode)?.Title ?? mealRule.MealCode;
+                result.Meals.Add(new RationMealResult { FeedCode = rule.FeedCode, FeedTitle = feedTitle, MealCode = mealRule.MealCode, MealTitle = mealTitle, AmountKg = dailyAmount * mealRule.PercentOfDailyAmount / 100m });
             }
         }
         return result;
