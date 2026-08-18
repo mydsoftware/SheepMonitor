@@ -9,21 +9,32 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <TextBlock Text="نتیجه جیره" FontSize="26" FontWeight="Bold"/>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,18,0,18">
-            <TextBlock Text="روز جیره:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <TextBox Width="70" Text="{Binding SelectedDayNumber, UpdateSourceTrigger=PropertyChanged}"/>
-            <TextBlock Text="وزن (کیلوگرم):" VerticalAlignment="Center" Margin="20,0,8,0"/>
-            <TextBox Width="90" Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button Content="محاسبه روز" Click="CalculateDay_Click" Margin="20,0,8,0" Padding="14,6"/>
-            <Button Content="محاسبه کل دوره" Click="CalculatePeriod_Click" Padding="14,6"/>
+        <StackPanel Grid.Row="1" Margin="0,18,0,18">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="نوع محاسبه:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox Width="180" SelectedValue="{Binding CalculationTarget}">
+                    <ComboBoxItem Content="یک گوسفند" Tag="SingleSheep"/>
+                    <ComboBoxItem Content="میانگین وزن گله" Tag="AverageHerdWeight"/>
+                </ComboBox>
+                <TextBlock Text="شماره گوسفند:" VerticalAlignment="Center" Margin="20,0,8,0"/>
+                <TextBox Width="100" Text="{Binding SheepId, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="روز جیره:" VerticalAlignment="Center" Margin="20,0,8,0"/>
+                <TextBox Width="70" Text="{Binding SelectedDayNumber, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="وزن مبنا:" VerticalAlignment="Center" Margin="20,0,8,0"/>
+                <TextBox Width="90" Text="{Binding WeightKg, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <Button Content="محاسبه روز" Click="CalculateDay_Click" Margin="0,0,8,0" Padding="14,6"/>
+                <Button Content="محاسبه کل دوره" Click="CalculatePeriod_Click" Padding="14,6"/>
+            </StackPanel>
         </StackPanel>
         <DataGrid Grid.Row="2" ItemsSource="{Binding Results}" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="روز" Binding="{Binding DayNumber}"/>
-                <DataGridTextColumn Header="تاریخ" Binding="{Binding Date, StringFormat=yyyy/MM/dd}"/>
+                <DataGridTextColumn Header="تاریخ شمسی" Binding="{Binding PersianDate}"/>
                 <DataGridTextColumn Header="وعده" Binding="{Binding MealCode}"/>
                 <DataGridTextColumn Header="ماده غذایی" Binding="{Binding FeedCode}"/>
-                <DataGridTextColumn Header="وزن" Binding="{Binding WeightKg, StringFormat=N2}"/>
+                <DataGridTextColumn Header="وزن مبنا" Binding="{Binding WeightKg, StringFormat=N2}"/>
                 <DataGridTextColumn Header="مقدار روزانه (کیلوگرم)" Binding="{Binding DailyAmountKg, StringFormat=N3}"/>
                 <DataGridTextColumn Header="مقدار وعده (کیلوگرم)" Binding="{Binding MealAmountKg, StringFormat=N3}"/>
             </DataGrid.Columns>
