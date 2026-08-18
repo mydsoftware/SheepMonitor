@@ -27,9 +27,14 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
         {
             e.ToTable("FeedConsumptionRecords");
             e.HasKey(x => x.Id);
+            e.Property(x => x.FeedCode).HasMaxLength(100).IsRequired();
+            e.Property(x => x.FeedTitle).HasMaxLength(250).IsRequired();
+            e.Property(x => x.MealCode).HasMaxLength(100).IsRequired();
+            e.Property(x => x.ActualAmountKg).HasPrecision(10, 3);
+            e.Property(x => x.WasteAmountKg).HasPrecision(10, 3);
             e.Property(x => x.Notes).HasMaxLength(2000);
-            e.HasIndex(x => new { x.Date, x.SheepId });
-            e.HasOne<Sheep>().WithMany().HasForeignKey(x => x.SheepId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.ConsumedAt, x.SheepId });
+            e.HasOne<Sheep>().WithMany().HasForeignKey(x => x.SheepId).OnDelete(DeleteBehavior.SetNull);
         });
         modelBuilder.Entity<FeedConsumptionItem>(e =>
         {
