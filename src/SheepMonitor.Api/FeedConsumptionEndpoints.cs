@@ -14,18 +14,27 @@ public static class FeedConsumptionEndpoints
 
         group.MapGet("/summary", async (SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
-            var query = db.FeedConsumptionRecords.AsNoTracking();
-            var records = await query.SelectMany(x => db.FeedConsumptionItems.Where(i => i.FeedConsumptionRecordId == x.Id))
-                .ToListAsync(cancellationToken);
-
+            var records = await db.FeedConsumptionItems.AsNoTracking().ToListAsync(cancellationToken);
             var animalCount = await db.Sheep.AsNoTracking().CountAsync(cancellationToken);
             var summary = new FeedConsumptionSummary(
-                records.Sum(x => x.PlannedKg),
-                records.Sum(x => x.ActualKg),
-                records.Sum(x => x.WasteKg),
-                animalCount);
-
+                records.Sum(x => x.PlannedKg), records.Sum(x => x.ActualKg), records.Sum(x => x.WasteKg), animalCount);
             return Results.Ok(summary);
+        });
+
+        group.MapGet("/details", async (DateTime? from, DateTime? to, string? feedCode, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
+        {
+            var query = db.FeedConsumptionRecords.AsNoTracking();
+            if (from.HasValue) query = query.Where(x => x.ConsumedAt >= from.Value);
+            if (to.HasValue) query = query.Where(x => x.ConsumedAt <= to.Value);
+            if (!string.IsNullOrWhiteSpace(feedCode)) query = query.Where(x => x.FeedCode == feedCode);
+
+            var details = await query.OrderByDescending(x => x.ConsumedAt).Select(x => new
+            {
+                x.Id, x.ConsumedAt, x.FeedCode, x.FeedTitle, x.MealCode,
+                x.ActualAmountKg, WasteKg = x.WasteAmountKg ?? 0m, x.NetConsumedKg, x.SheepId, x.Notes
+            }).ToListAsync(cancellationToken);
+
+            return Results.Ok(details);
         });
 
         return group;
