@@ -9,7 +9,7 @@ namespace SheepMonitor.App.ViewModels;
 /// </summary>
 public sealed class TreatmentViewModel(IHealthService healthService, ITreatmentService treatmentService, IReferenceDataService referenceDataService)
 {
-    public ObservableCollection<SheepHealthRecord> HealthRecords { get; } = [];
+    public ObservableCollection<HealthRecord> HealthRecords { get; } = [];
     public ObservableCollection<SheepTreatmentRecord> Treatments { get; } = [];
     public IReadOnlyList<ReferenceData> TreatmentTypes { get; private set; } = [];
     public IReadOnlyList<ReferenceData> Medicines { get; private set; } = [];
