@@ -27,24 +27,31 @@ public static class FeedConsumptionEndpoints
             return Results.Ok(new FeedDashboardSnapshot(summary.PlannedKg, summary.ActualKg, summary.WasteKg, summary.NetConsumptionKg, summary.VarianceKg, summary.VariancePercent, summary.NetConsumptionPerAnimalKg, summary.AnimalCount, DateTime.UtcNow));
         });
 
-        group.MapGet("/trend", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
+        group.MapGet("/cost", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
             var query = db.FeedConsumptionRecords.AsNoTracking();
             if (from.HasValue) query = query.Where(x => x.ConsumedAt >= from.Value);
             if (to.HasValue) query = query.Where(x => x.ConsumedAt <= to.Value);
 
-            var trend = await query
-                .GroupBy(x => x.ConsumedAt.Date)
-                .Select(g => new
-                {
-                    Date = g.Key,
-                    ActualKg = g.Sum(x => x.ActualAmountKg),
-                    WasteKg = g.Sum(x => x.WasteAmountKg ?? 0m),
-                    NetConsumedKg = g.Sum(x => x.NetConsumedKg)
-                })
-                .OrderBy(x => x.Date)
-                .ToListAsync(cancellationToken);
+            var records = await query.Select(x => new { x.ConsumedAt, x.FeedCode, x.NetConsumedKg }).ToListAsync(cancellationToken);
+            var prices = await db.FeedPrices.AsNoTracking().ToListAsync(cancellationToken);
 
+            var totalCost = records.Sum(r =>
+            {
+                var price = prices.Where(p => p.FeedCode == r.FeedCode && p.EffectiveFrom <= r.ConsumedAt && (p.EffectiveTo == null || p.EffectiveTo >= r.ConsumedAt))
+                    .OrderByDescending(p => p.EffectiveFrom).Select(p => (decimal?)p.PricePerKg).FirstOrDefault() ?? 0m;
+                return FeedCostCalculator.Calculate(r.NetConsumedKg, price);
+            });
+
+            return Results.Ok(new { TotalCost = totalCost, Currency = prices.Select(x => x.Currency).FirstOrDefault() ?? "IRR" });
+        });
+
+        group.MapGet("/trend", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
+        {
+            var query = db.FeedConsumptionRecords.AsNoTracking();
+            if (from.HasValue) query = query.Where(x => x.ConsumedAt >= from.Value);
+            if (to.HasValue) query = query.Where(x => x.ConsumedAt <= to.Value);
+            var trend = await query.GroupBy(x => x.ConsumedAt.Date).Select(g => new { Date = g.Key, ActualKg = g.Sum(x => x.ActualAmountKg), WasteKg = g.Sum(x => x.WasteAmountKg ?? 0m), NetConsumedKg = g.Sum(x => x.NetConsumedKg) }).OrderBy(x => x.Date).ToListAsync(cancellationToken);
             return Results.Ok(trend);
         });
 
@@ -54,13 +61,7 @@ public static class FeedConsumptionEndpoints
             if (from.HasValue) query = query.Where(x => x.ConsumedAt >= from.Value);
             if (to.HasValue) query = query.Where(x => x.ConsumedAt <= to.Value);
             if (!string.IsNullOrWhiteSpace(feedCode)) query = query.Where(x => x.FeedCode == feedCode);
-
-            var details = await query.OrderByDescending(x => x.ConsumedAt).Select(x => new
-            {
-                x.Id, x.ConsumedAt, x.FeedCode, x.FeedTitle, x.MealCode,
-                x.ActualAmountKg, WasteKg = x.WasteAmountKg ?? 0m, x.NetConsumedKg, x.SheepId, x.Notes
-            }).ToListAsync(cancellationToken);
-
+            var details = await query.OrderByDescending(x => x.ConsumedAt).Select(x => new { x.Id, x.ConsumedAt, x.FeedCode, x.FeedTitle, x.MealCode, x.ActualAmountKg, WasteKg = x.WasteAmountKg ?? 0m, x.NetConsumedKg, x.SheepId, x.Notes }).ToListAsync(cancellationToken);
             return Results.Ok(details);
         });
 
