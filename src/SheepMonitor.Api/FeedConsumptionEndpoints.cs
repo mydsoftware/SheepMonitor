@@ -33,18 +33,40 @@ public static class FeedConsumptionEndpoints
             if (from.HasValue) query = query.Where(x => x.ConsumedAt >= from.Value);
             if (to.HasValue) query = query.Where(x => x.ConsumedAt <= to.Value);
 
-            var records = await query.Select(x => new { x.ConsumedAt, x.FeedCode, x.NetConsumedKg }).ToListAsync(cancellationToken);
+            var records = await query.Select(x => new { x.ConsumedAt, x.FeedCode, x.FeedTitle, x.NetConsumedKg }).ToListAsync(cancellationToken);
             var prices = await db.FeedPrices.AsNoTracking().ToListAsync(cancellationToken);
-            var totalCost = records.Sum(r =>
-            {
-                var price = prices.Where(p => p.FeedCode == r.FeedCode && p.EffectiveFrom <= r.ConsumedAt && (p.EffectiveTo == null || p.EffectiveTo >= r.ConsumedAt))
-                    .OrderByDescending(p => p.EffectiveFrom).Select(p => (decimal?)p.PricePerKg).FirstOrDefault() ?? 0m;
-                return FeedCostCalculator.Calculate(r.NetConsumedKg, price);
-            });
             var animalCount = await db.Sheep.AsNoTracking().CountAsync(cancellationToken);
+            var currency = prices.Select(x => x.Currency).FirstOrDefault() ?? "IRR";
+
+            decimal ResolvePrice(string feedCode, DateTime consumedAt) => prices
+                .Where(p => p.FeedCode == feedCode && p.EffectiveFrom <= consumedAt && (p.EffectiveTo == null || p.EffectiveTo >= consumedAt))
+                .OrderByDescending(p => p.EffectiveFrom)
+                .Select(p => (decimal?)p.PricePerKg).FirstOrDefault() ?? 0m;
+
+            var byFeed = records
+                .GroupBy(x => new { x.FeedCode, x.FeedTitle })
+                .Select(g =>
+                {
+                    var netKg = g.Sum(x => x.NetConsumedKg);
+                    var cost = g.Sum(x => FeedCostCalculator.Calculate(x.NetConsumedKg, ResolvePrice(x.FeedCode, x.ConsumedAt)));
+                    return new { g.Key.FeedCode, g.Key.FeedTitle, NetConsumedKg = netKg, TotalCost = cost };
+                })
+                .OrderByDescending(x => x.TotalCost)
+                .ToList();
+
+            var totalCost = byFeed.Sum(x => x.TotalCost);
+            var netKgTotal = byFeed.Sum(x => x.NetConsumedKg);
             var costPerAnimal = animalCount > 0 ? decimal.Round(totalCost / animalCount, 2, MidpointRounding.AwayFromZero) : 0m;
-            var netKg = records.Sum(x => x.NetConsumedKg);
-            return Results.Ok(new FeedCostDashboardSnapshot(totalCost, costPerAnimal, netKg, animalCount, prices.Select(x => x.Currency).FirstOrDefault() ?? "IRR", DateTime.UtcNow));
+            return Results.Ok(new
+            {
+                TotalCost = totalCost,
+                CostPerAnimal = costPerAnimal,
+                NetConsumptionKg = netKgTotal,
+                AnimalCount = animalCount,
+                Currency = currency,
+                ByFeed = byFeed,
+                GeneratedAtUtc = DateTime.UtcNow
+            });
         });
 
         group.MapGet("/trend", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
