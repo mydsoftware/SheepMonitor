@@ -21,6 +21,18 @@ public static class FeedConsumptionEndpoints
             return Results.Ok(summary);
         });
 
+        group.MapGet("/dashboard", async (SheepMonitorDbContext db, CancellationToken cancellationToken) =>
+        {
+            var records = await db.FeedConsumptionItems.AsNoTracking().ToListAsync(cancellationToken);
+            var animalCount = await db.Sheep.AsNoTracking().CountAsync(cancellationToken);
+            var summary = new FeedConsumptionSummary(
+                records.Sum(x => x.PlannedKg), records.Sum(x => x.ActualKg), records.Sum(x => x.WasteKg), animalCount);
+            return Results.Ok(new FeedDashboardSnapshot(
+                summary.PlannedKg, summary.ActualKg, summary.WasteKg, summary.NetConsumptionKg,
+                summary.VarianceKg, summary.VariancePercent, summary.NetConsumptionPerAnimalKg,
+                summary.AnimalCount, DateTime.UtcNow));
+        });
+
         group.MapGet("/details", async (DateTime? from, DateTime? to, string? feedCode, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
             var query = db.FeedConsumptionRecords.AsNoTracking();
