@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SheepMonitor.Api;
 using SheepMonitor.Core.Models;
 using SheepMonitor.Data;
@@ -52,7 +53,19 @@ public sealed class DailyMealConsumptionApiIntegrationTests : IClassFixture<Dail
 
 public sealed class DailyMealConsumptionApiFactory : WebApplicationFactory<Program>
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing");
+    private readonly string _databaseName = $"SheepMonitor-DailyMealConsumption-Tests-{Guid.NewGuid():N}";
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Testing");
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<DbContextOptions<SheepMonitorDbContext>>();
+            services.RemoveAll<SheepMonitorDbContext>();
+            services.AddDbContext<SheepMonitorDbContext>(options =>
+                options.UseInMemoryDatabase(_databaseName));
+        });
+    }
 
     protected override Microsoft.Extensions.Hosting.IHost CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder)
     {
