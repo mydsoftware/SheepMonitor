@@ -24,10 +24,10 @@ public static class DailyMealConsumptionEndpoints
                 return Results.BadRequest(new { message = "تاریخ پایان شمسی نامعتبر است." });
 
             if (!string.IsNullOrWhiteSpace(from))
-                fromDate = parsedFrom.Date;
+                fromDate = PersianDateRangeParser.Parse(from).From;
 
             if (!string.IsNullOrWhiteSpace(to))
-                toDateExclusive = parsedTo.Date.AddDays(1);
+                toDateExclusive = PersianDateRangeParser.Parse(to).To;
 
             if (fromDate.HasValue && toDateExclusive.HasValue && fromDate >= toDateExclusive)
                 return Results.BadRequest(new { message = "بازه تاریخ نامعتبر است." });
