@@ -4,9 +4,17 @@ using SheepMonitor.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<SheepMonitorDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Server=(localdb)\\mssqllocaldb;Database=SheepMonitor;Trusted_Connection=True;TrustServerCertificate=True"));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<SheepMonitorDbContext>(options =>
+        options.UseInMemoryDatabase("SheepMonitor-DailyMealConsumption-Tests"));
+}
+else
+{
+    builder.Services.AddDbContext<SheepMonitorDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? "Server=(localdb)\\mssqllocaldb;Database=SheepMonitor;Trusted_Connection=True;TrustServerCertificate=True"));
+}
 
 builder.Services.AddEndpointsApiExplorer();
 
