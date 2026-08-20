@@ -61,10 +61,12 @@ public sealed class DailyMealConsumptionApiFactory : WebApplicationFactory<Progr
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
             var descriptors = services
                 .Where(x => x.ServiceType == typeof(DbContextOptions<SheepMonitorDbContext>) ||
+                            x.ServiceType == typeof(DbContextOptions) ||
                             x.ServiceType == typeof(SheepMonitorDbContext))
                 .ToList();
 
