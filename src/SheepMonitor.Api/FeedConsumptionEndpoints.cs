@@ -27,6 +27,68 @@ public static class FeedConsumptionEndpoints
             return Results.Ok(new FeedDashboardSnapshot(summary.PlannedKg, summary.ActualKg, summary.WasteKg, summary.NetConsumptionKg, summary.VarianceKg, summary.VariancePercent, summary.NetConsumptionPerAnimalKg, summary.AnimalCount, DateTime.UtcNow));
         });
 
+        // مقایسه مصرف واقعی با جیره برنامه‌ریزی‌شده در سطح کل گله و هر قلم خوراک.
+        group.MapGet("/comparison", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
+        {
+            var query = from item in db.FeedConsumptionItems.AsNoTracking()
+                        join record in db.FeedConsumptionRecords.AsNoTracking()
+                            on item.FeedConsumptionRecordId equals record.Id
+                        select new { item, record.ConsumedAt };
+
+            if (from.HasValue)
+                query = query.Where(x => x.ConsumedAt >= from.Value);
+            if (to.HasValue)
+                query = query.Where(x => x.ConsumedAt <= to.Value);
+
+            var rows = await query.ToListAsync(cancellationToken);
+            var byFeed = rows
+                .GroupBy(x => x.item.FeedCode)
+                .Select(g =>
+                {
+                    var planned = g.Sum(x => x.item.PlannedKg);
+                    var actual = g.Sum(x => x.item.ActualKg);
+                    var waste = g.Sum(x => x.item.WasteKg);
+                    var variance = actual - planned;
+                    var variancePercent = planned == 0m ? 0m : decimal.Round(variance / planned * 100m, 2, MidpointRounding.AwayFromZero);
+                    return new
+                    {
+                        FeedCode = g.Key,
+                        PlannedKg = planned,
+                        ActualKg = actual,
+                        WasteKg = waste,
+                        NetActualKg = actual - waste,
+                        VarianceKg = variance,
+                        VariancePercent = variancePercent
+                    };
+                })
+                .OrderBy(x => x.FeedCode)
+                .ToList();
+
+            var totalPlanned = byFeed.Sum(x => x.PlannedKg);
+            var totalActual = byFeed.Sum(x => x.ActualKg);
+            var totalWaste = byFeed.Sum(x => x.WasteKg);
+            var totalVariance = totalActual - totalPlanned;
+            var totalVariancePercent = totalPlanned == 0m ? 0m : decimal.Round(totalVariance / totalPlanned * 100m, 2, MidpointRounding.AwayFromZero);
+            var animalCount = await db.Sheep.AsNoTracking().CountAsync(cancellationToken);
+            var netActual = totalActual - totalWaste;
+
+            return Results.Ok(new
+            {
+                From = from,
+                To = to,
+                AnimalCount = animalCount,
+                TotalPlannedKg = totalPlanned,
+                TotalActualKg = totalActual,
+                TotalWasteKg = totalWaste,
+                TotalNetActualKg = netActual,
+                TotalVarianceKg = totalVariance,
+                TotalVariancePercent = totalVariancePercent,
+                NetActualPerAnimalKg = animalCount == 0 ? 0m : decimal.Round(netActual / animalCount, 3, MidpointRounding.AwayFromZero),
+                ByFeed = byFeed,
+                GeneratedAtUtc = DateTime.UtcNow
+            });
+        });
+
         group.MapGet("/cost", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
             var query = db.FeedConsumptionRecords.AsNoTracking();
