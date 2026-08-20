@@ -16,7 +16,7 @@ public sealed class PersianDateRangeParserTests
 
     [Theory]
     [InlineData("1405/13/01")]
-    [InlineData("1405/02/31")]
+    [InlineData("1405/12/31")]
     [InlineData("invalid")]
     public void TryParse_ShouldRejectInvalidDate(string value)
     {
