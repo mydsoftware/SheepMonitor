@@ -40,7 +40,18 @@ public static class DailyMealConsumptionEndpoints
                     FeedCostCalculator.Calculate(x.NetConsumedKg, FeedPriceResolver.Resolve(prices, x.FeedCode, x.ConsumedAt)))
             }).Select(x => (x.ConsumedAt, x.Input));
 
-            return Results.Ok(DailyMealConsumptionReportBuilder.Build(input));
+            var reports = DailyMealConsumptionReportBuilder.Build(input);
+
+            return Results.Ok(reports.Select(x => new
+            {
+                x.Date,
+                PersianDate = PersianDateFormatter.Format(x.Date),
+                x.Meals,
+                x.TotalActualKg,
+                x.TotalWasteKg,
+                x.TotalNetConsumptionKg,
+                x.TotalCost
+            }));
         });
 
         return group;
