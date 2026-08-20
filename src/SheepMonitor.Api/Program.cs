@@ -22,6 +22,7 @@ var app = builder.Build();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapFeedConsumptionEndpoints();
+app.MapFeedConsumptionThresholdEndpoints();
 app.MapMealConsumptionEndpoints();
 app.MapDailyMealConsumptionEndpoints();
 
