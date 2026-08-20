@@ -12,11 +12,31 @@ public static class DailyMealConsumptionEndpoints
     {
         var group = app.MapGroup("/api/feed-consumption/daily");
 
-        group.MapGet("/report", async (DateTime? from, DateTime? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
+        group.MapGet("/report", async (string? from, string? to, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
+            DateTime? fromDate = null;
+            DateTime? toDateExclusive = null;
+
+            if (!string.IsNullOrWhiteSpace(from) && !PersianDateRangeParser.TryParse(from, out var parsedFrom))
+                return Results.BadRequest(new { message = "تاریخ شروع شمسی نامعتبر است." });
+
+            if (!string.IsNullOrWhiteSpace(to) && !PersianDateRangeParser.TryParse(to, out var parsedTo))
+                return Results.BadRequest(new { message = "تاریخ پایان شمسی نامعتبر است." });
+
+            if (!string.IsNullOrWhiteSpace(from))
+                fromDate = parsedFrom.Date;
+
+            if (!string.IsNullOrWhiteSpace(to))
+                toDateExclusive = parsedTo.Date.AddDays(1);
+
+            if (fromDate.HasValue && toDateExclusive.HasValue && fromDate >= toDateExclusive)
+                return Results.BadRequest(new { message = "بازه تاریخ نامعتبر است." });
+
             var query = db.FeedConsumptionRecords.AsNoTracking();
-            if (from.HasValue) query = query.Where(x => x.ConsumedAt >= from.Value);
-            if (to.HasValue) query = query.Where(x => x.ConsumedAt <= to.Value);
+            if (fromDate.HasValue)
+                query = query.Where(x => x.ConsumedAt >= fromDate.Value);
+            if (toDateExclusive.HasValue)
+                query = query.Where(x => x.ConsumedAt < toDateExclusive.Value);
 
             var records = await query.Select(x => new
             {
