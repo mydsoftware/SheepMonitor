@@ -17,3 +17,9 @@ app.MapFeedConsumptionEndpoints();
 app.MapMealConsumptionEndpoints();
 
 app.Run();
+
+namespace SheepMonitor.Api;
+
+public partial class Program
+{
+}
