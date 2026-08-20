@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SheepMonitor.Api;
 using SheepMonitor.Core.Models;
 using SheepMonitor.Data;
@@ -62,20 +61,6 @@ public sealed class DailyMealConsumptionApiFactory : WebApplicationFactory<Progr
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-        builder.ConfigureServices(services =>
-        {
-            var descriptors = services
-                .Where(x => x.ServiceType == typeof(DbContextOptions<SheepMonitorDbContext>) ||
-                            x.ServiceType == typeof(DbContextOptions) ||
-                            x.ServiceType == typeof(SheepMonitorDbContext))
-                .ToList();
-
-            foreach (var descriptor in descriptors)
-                services.Remove(descriptor);
-
-            services.AddDbContext<SheepMonitorDbContext>(options =>
-                options.UseInMemoryDatabase("SheepMonitor-DailyMealConsumption-Tests"));
-        });
     }
 
     protected override Microsoft.Extensions.Hosting.IHost CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder)
