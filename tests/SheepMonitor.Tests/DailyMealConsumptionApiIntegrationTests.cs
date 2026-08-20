@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,57 +59,67 @@ public sealed class DailyMealConsumptionApiIntegrationTests : IClassFixture<Dail
 
 public sealed class DailyMealConsumptionApiFactory : WebApplicationFactory<Program>
 {
-    protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(x => x.ServiceType == typeof(DbContextOptions<SheepMonitorDbContext>));
-            if (descriptor is not null)
+            var descriptors = services
+                .Where(x => x.ServiceType == typeof(DbContextOptions<SheepMonitorDbContext>) ||
+                            x.ServiceType == typeof(SheepMonitorDbContext))
+                .ToList();
+
+            foreach (var descriptor in descriptors)
                 services.Remove(descriptor);
 
             services.AddDbContext<SheepMonitorDbContext>(options =>
                 options.UseInMemoryDatabase("SheepMonitor-DailyMealConsumption-Tests"));
+        });
+    }
 
-            using var provider = services.BuildServiceProvider();
-            using var scope = provider.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<SheepMonitorDbContext>();
-            db.Database.EnsureCreated();
+    protected override Microsoft.Extensions.Hosting.IHost CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
 
-            if (!db.FeedConsumptionRecords.Any())
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SheepMonitorDbContext>();
+        db.Database.EnsureCreated();
+
+        if (!db.FeedConsumptionRecords.Any())
+        {
+            db.FeedPrices.Add(new FeedPrice
             {
-                db.FeedPrices.Add(new FeedPrice
+                Id = 1,
+                FeedCode = "CONCENTRATE",
+                PricePerKg = 100m,
+                Currency = "IRR",
+                EffectiveFrom = new DateTime(2026, 1, 1)
+            });
+
+            db.FeedConsumptionRecords.AddRange(
+                new FeedConsumptionRecord
                 {
                     Id = 1,
+                    ConsumedAt = new DateTime(2026, 8, 18, 7, 0, 0),
                     FeedCode = "CONCENTRATE",
-                    PricePerKg = 100m,
-                    Currency = "IRR",
-                    EffectiveFrom = new DateTime(2026, 1, 1)
+                    FeedTitle = "کنسانتره",
+                    MealCode = "صبح",
+                    ActualAmountKg = 10m,
+                    WasteAmountKg = 1m
+                },
+                new FeedConsumptionRecord
+                {
+                    Id = 2,
+                    ConsumedAt = new DateTime(2026, 8, 19, 7, 0, 0),
+                    FeedCode = "CONCENTRATE",
+                    FeedTitle = "کنسانتره",
+                    MealCode = "صبح",
+                    ActualAmountKg = 12m,
+                    WasteAmountKg = 1m
                 });
 
-                db.FeedConsumptionRecords.AddRange(
-                    new FeedConsumptionRecord
-                    {
-                        Id = 1,
-                        ConsumedAt = new DateTime(2026, 8, 18, 7, 0, 0),
-                        FeedCode = "CONCENTRATE",
-                        FeedTitle = "کنسانتره",
-                        MealCode = "صبح",
-                        ActualAmountKg = 10m,
-                        WasteAmountKg = 1m
-                    },
-                    new FeedConsumptionRecord
-                    {
-                        Id = 2,
-                        ConsumedAt = new DateTime(2026, 8, 19, 7, 0, 0),
-                        FeedCode = "CONCENTRATE",
-                        FeedTitle = "کنسانتره",
-                        MealCode = "صبح",
-                        ActualAmountKg = 12m,
-                        WasteAmountKg = 1m
-                    });
+            db.SaveChanges();
+        }
 
-                db.SaveChanges();
-            }
-        });
+        return host;
     }
 }
