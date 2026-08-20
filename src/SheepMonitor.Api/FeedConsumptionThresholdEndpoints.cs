@@ -31,27 +31,21 @@ public static class FeedConsumptionThresholdEndpoints
 
         group.MapPost("/", async (FeedConsumptionThreshold request, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
-            if (string.IsNullOrWhiteSpace(request.FeedCode) || request.LowDeviationPercent < 0m || request.HighDeviationPercent < request.LowDeviationPercent)
-                return Results.BadRequest("مقادیر آستانه مصرف نامعتبر است.");
+            var validation = Validate(request);
+            if (validation is not null)
+                return Results.BadRequest(validation);
 
-            var item = new FeedConsumptionThreshold
-            {
-                FeedCode = request.FeedCode.Trim(),
-                LowDeviationPercent = request.LowDeviationPercent,
-                HighDeviationPercent = request.HighDeviationPercent,
-                IsActive = request.IsActive,
-                Notes = request.Notes
-            };
-
-            db.FeedConsumptionThresholds.Add(item);
+            request.FeedCode = request.FeedCode.Trim();
+            db.FeedConsumptionThresholds.Add(request);
             await db.SaveChangesAsync(cancellationToken);
-            return Results.Created($"/api/feed-consumption-thresholds/{item.FeedCode}", item);
+            return Results.Created($"/api/feed-consumption-thresholds/{request.FeedCode}", request);
         });
 
         group.MapPut("/{id:int}", async (int id, FeedConsumptionThreshold request, SheepMonitorDbContext db, CancellationToken cancellationToken) =>
         {
-            if (string.IsNullOrWhiteSpace(request.FeedCode) || request.LowDeviationPercent < 0m || request.HighDeviationPercent < request.LowDeviationPercent)
-                return Results.BadRequest("مقادیر آستانه مصرف نامعتبر است.");
+            var validation = Validate(request);
+            if (validation is not null)
+                return Results.BadRequest(validation);
 
             var item = await db.FeedConsumptionThresholds.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
             if (item is null)
@@ -78,5 +72,16 @@ public static class FeedConsumptionThresholdEndpoints
         });
 
         return group;
+    }
+
+    private static string? Validate(FeedConsumptionThreshold request)
+    {
+        if (string.IsNullOrWhiteSpace(request.FeedCode))
+            return "کد خوراک الزامی است.";
+        if (request.LowDeviationPercent < 0m)
+            return "آستانه کم‌مصرف نمی‌تواند منفی باشد.";
+        if (request.HighDeviationPercent <= request.LowDeviationPercent)
+            return "آستانه پرمصرف باید بزرگ‌تر از آستانه کم‌مصرف باشد.";
+        return null;
     }
 }
