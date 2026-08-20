@@ -17,17 +17,19 @@ public static class DailyMealConsumptionEndpoints
             DateTime? fromDate = null;
             DateTime? toDateExclusive = null;
 
-            if (!string.IsNullOrWhiteSpace(from) && !PersianDateRangeParser.TryParse(from, out var parsedFrom))
-                return Results.BadRequest(new { message = "تاریخ شروع شمسی نامعتبر است." });
-
-            if (!string.IsNullOrWhiteSpace(to) && !PersianDateRangeParser.TryParse(to, out var parsedTo))
-                return Results.BadRequest(new { message = "تاریخ پایان شمسی نامعتبر است." });
-
             if (!string.IsNullOrWhiteSpace(from))
-                fromDate = PersianDateRangeParser.Parse(from).From;
+            {
+                if (!PersianDateRangeParser.TryParse(from, out var parsedFrom))
+                    return Results.BadRequest(new { message = "تاریخ شروع شمسی نامعتبر است." });
+                fromDate = parsedFrom.Date;
+            }
 
             if (!string.IsNullOrWhiteSpace(to))
-                toDateExclusive = PersianDateRangeParser.Parse(to).To;
+            {
+                if (!PersianDateRangeParser.TryParse(to, out var parsedTo))
+                    return Results.BadRequest(new { message = "تاریخ پایان شمسی نامعتبر است." });
+                toDateExclusive = parsedTo.Date.AddDays(1);
+            }
 
             if (fromDate.HasValue && toDateExclusive.HasValue && fromDate >= toDateExclusive)
                 return Results.BadRequest(new { message = "بازه تاریخ نامعتبر است." });
