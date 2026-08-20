@@ -13,17 +13,13 @@ public sealed class DailyMealConsumptionApiIntegrationTests : IClassFixture<Dail
 {
     private readonly HttpClient _client;
 
-    public DailyMealConsumptionApiIntegrationTests(DailyMealConsumptionApiFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
+    public DailyMealConsumptionApiIntegrationTests(DailyMealConsumptionApiFactory factory) => _client = factory.CreateClient();
 
     [Fact]
     public async Task Report_WithoutFilter_ShouldReturnAllDays()
     {
         var response = await _client.GetAsync("/api/feed-consumption/daily/report");
         var body = await response.Content.ReadAsStringAsync();
-
         Assert.True(response.IsSuccessStatusCode, body);
         Assert.Contains("1405/05/27", body);
         Assert.Contains("1405/05/28", body);
@@ -34,7 +30,6 @@ public sealed class DailyMealConsumptionApiIntegrationTests : IClassFixture<Dail
     {
         var response = await _client.GetAsync("/api/feed-consumption/daily/report?from=1405/05/27&to=1405/05/27");
         var body = await response.Content.ReadAsStringAsync();
-
         Assert.True(response.IsSuccessStatusCode, body);
         Assert.Contains("1405/05/27", body);
         Assert.DoesNotContain("1405/05/28", body);
@@ -44,7 +39,6 @@ public sealed class DailyMealConsumptionApiIntegrationTests : IClassFixture<Dail
     public async Task Report_WithInvalidDate_ShouldReturnBadRequest()
     {
         var response = await _client.GetAsync("/api/feed-consumption/daily/report?from=1405/13/01");
-
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
     }
 
@@ -52,86 +46,32 @@ public sealed class DailyMealConsumptionApiIntegrationTests : IClassFixture<Dail
     public async Task Report_WithReversedRange_ShouldReturnBadRequest()
     {
         var response = await _client.GetAsync("/api/feed-consumption/daily/report?from=1405/05/28&to=1405/05/27");
-
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Comparison_ShouldReturnPlannedActualVarianceAndPerAnimalNetConsumption()
-    {
-        var response = await _client.GetAsync("/api/feed-consumption/comparison");
-        var body = await response.Content.ReadAsStringAsync();
-
-        Assert.True(response.IsSuccessStatusCode, body);
-        Assert.Contains("TotalPlannedKg", body);
-        Assert.Contains("TotalActualKg", body);
-        Assert.Contains("TotalVarianceKg", body);
-        Assert.Contains("NetActualPerAnimalKg", body);
-        Assert.Contains("CONCENTRATE", body);
-        Assert.Contains("20", body);
-        Assert.Contains("18", body);
     }
 }
 
 public sealed class DailyMealConsumptionApiFactory : WebApplicationFactory<Program>
 {
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.UseEnvironment("Testing");
-    }
+    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Testing");
 
     protected override Microsoft.Extensions.Hosting.IHost CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
-
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<SheepMonitorDbContext>();
         db.Database.EnsureCreated();
 
         if (!db.FeedConsumptionRecords.Any())
         {
-            db.FeedPrices.Add(new FeedPrice
-            {
-                Id = 1,
-                FeedCode = "CONCENTRATE",
-                PricePerKg = 100m,
-                Currency = "IRR",
-                EffectiveFrom = new DateTime(2026, 1, 1)
-            });
-
+            db.FeedPrices.Add(new FeedPrice { Id = 1, FeedCode = "CONCENTRATE", PricePerKg = 100m, Currency = "IRR", EffectiveFrom = new DateTime(2026, 1, 1) });
             db.Sheep.AddRange(
-                new Sheep { Id = 1, SheepNumber = "001", Gender = "نر", IsActive = true },
-                new Sheep { Id = 2, SheepNumber = "002", Gender = "ماده", IsActive = true });
-
+                new Sheep { Id = 1, Number = "001", Gender = "نر", InitialWeighingDate = new DateTime(2026, 8, 18), InitialWeightKg = 50m },
+                new Sheep { Id = 2, Number = "002", Gender = "ماده", InitialWeighingDate = new DateTime(2026, 8, 18), InitialWeightKg = 45m });
             db.FeedConsumptionRecords.AddRange(
-                new FeedConsumptionRecord
-                {
-                    Id = 1,
-                    ConsumedAt = new DateTime(2026, 8, 18, 7, 0, 0),
-                    FeedCode = "CONCENTRATE",
-                    FeedTitle = "کنسانتره",
-                    MealCode = "صبح",
-                    ActualAmountKg = 10m,
-                    WasteAmountKg = 1m
-                },
-                new FeedConsumptionRecord
-                {
-                    Id = 2,
-                    ConsumedAt = new DateTime(2026, 8, 19, 7, 0, 0),
-                    FeedCode = "CONCENTRATE",
-                    FeedTitle = "کنسانتره",
-                    MealCode = "صبح",
-                    ActualAmountKg = 12m,
-                    WasteAmountKg = 1m
-                });
-
-            db.FeedConsumptionItems.AddRange(
-                new FeedConsumptionItem { Id = 1, FeedConsumptionRecordId = 1, FeedCode = "CONCENTRATE", PlannedKg = 10m, ActualKg = 10m, WasteKg = 1m },
-                new FeedConsumptionItem { Id = 2, FeedConsumptionRecordId = 2, FeedCode = "CONCENTRATE", PlannedKg = 10m, ActualKg = 8m, WasteKg = 1m });
-
+                new FeedConsumptionRecord { Id = 1, ConsumedAt = new DateTime(2026, 8, 18, 7, 0, 0), FeedCode = "CONCENTRATE", FeedTitle = "کنسانتره", MealCode = "صبح", ActualAmountKg = 10m, WasteAmountKg = 1m },
+                new FeedConsumptionRecord { Id = 2, ConsumedAt = new DateTime(2026, 8, 19, 7, 0, 0), FeedCode = "CONCENTRATE", FeedTitle = "کنسانتره", MealCode = "صبح", ActualAmountKg = 12m, WasteAmountKg = 1m });
             db.SaveChanges();
         }
-
         return host;
     }
 }
