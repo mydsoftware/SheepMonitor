@@ -16,6 +16,7 @@ public sealed class DashboardViewModel(SheepMonitorDbContext db)
     public decimal WasteKg { get; private set; }
     public decimal NetKg => Math.Max(0m, ActualKg - WasteKg);
     public ObservableCollection<FeedDashboardRow> FeedSummary { get; } = [];
+    public ObservableCollection<DailyConsumptionRow> DailyConsumption { get; } = [];
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
@@ -41,6 +42,25 @@ public sealed class DashboardViewModel(SheepMonitorDbContext db)
 
         foreach (var row in rows)
             FeedSummary.Add(row);
+
+        DailyConsumption.Clear();
+        var dailyRows = await db.FeedConsumptionRecords
+            .GroupBy(x => x.ConsumedAt.Date)
+            .Select(g => new DailyConsumptionRow
+            {
+                Date = g.Key,
+                ActualKg = g.Sum(x => x.ActualAmountKg),
+                WasteKg = g.Sum(x => x.WasteAmountKg ?? 0m)
+            })
+            .OrderBy(x => x.Date)
+            .ToListAsync(cancellationToken);
+
+        var max = dailyRows.Count == 0 ? 0m : dailyRows.Max(x => x.NetKg);
+        foreach (var row in dailyRows)
+        {
+            row.BarWidth = max == 0m ? 0m : Math.Min(1m, row.NetKg / max);
+            DailyConsumption.Add(row);
+        }
     }
 }
 
@@ -52,4 +72,13 @@ public sealed class FeedDashboardRow
     public decimal WasteKg { get; init; }
     public decimal NetKg => Math.Max(0m, ActualKg - WasteKg);
     public decimal DeviationPercent => PlannedKg == 0m ? 0m : ((NetKg - PlannedKg) / PlannedKg) * 100m;
+}
+
+public sealed class DailyConsumptionRow
+{
+    public DateTime Date { get; init; }
+    public decimal ActualKg { get; init; }
+    public decimal WasteKg { get; init; }
+    public decimal NetKg => Math.Max(0m, ActualKg - WasteKg);
+    public decimal BarWidth { get; set; }
 }
