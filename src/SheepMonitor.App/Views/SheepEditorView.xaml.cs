@@ -10,11 +10,14 @@ public partial class SheepEditorView : UserControl
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is not SheepEditorViewModel vm) return;
+        if (DataContext is not SheepEditorViewModel vm)
+            return;
+
         try
         {
             await vm.SaveAsync();
-            MessageBox.Show("گوسفند با موفقیت ثبت شد.", "ثبت موفق", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("اطلاعات گوسفند با موفقیت ذخیره شد.", "ثبت موفق", MessageBoxButton.OK, MessageBoxImage.Information);
+            Window.GetWindow(this)!.DialogResult = true;
         }
         catch (Exception ex)
         {
