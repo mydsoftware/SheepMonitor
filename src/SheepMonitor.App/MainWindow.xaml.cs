@@ -7,7 +7,20 @@ namespace SheepMonitor.App;
 
 public partial class MainWindow : Window
 {
-    public MainWindow() => InitializeComponent();
+    public MainWindow()
+    {
+        InitializeComponent();
+        Loaded += async (_, _) => await ShowDashboardAsync();
+    }
+
+    private async Task ShowDashboardAsync()
+    {
+        var vm = ((App)Application.Current).GetRequiredService<DashboardViewModel>();
+        await vm.LoadAsync();
+        ContentFrame.Content = new DashboardView { DataContext = vm };
+    }
+
+    private async void Dashboard_Click(object sender, RoutedEventArgs e) => await ShowDashboardAsync();
 
     private async void ReferenceData_Click(object sender, RoutedEventArgs e)
     {
