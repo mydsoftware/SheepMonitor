@@ -1,0 +1,97 @@
+<UserControl x:Class="SheepMonitor.App.Views.GrowthReportView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="گزارش رشد گوسفند" FontSize="28" FontWeight="Bold" Margin="0,0,0,18"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,18">
+            <TextBlock Text="انتخاب گوسفند:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox ItemsSource="{Binding Sheep}"
+                      SelectedItem="{Binding SelectedSheep}"
+                      DisplayMemberPath="Number"
+                      Width="220"/>
+            <Button Content="نمایش گزارش"
+                    Margin="12,0,0,0"
+                    Padding="16,6"
+                    Click="Report_Click"/>
+        </StackPanel>
+
+        <!-- خلاصه آمار رشد -->
+        <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,18">
+            <UniformGrid Columns="4">
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="وزن اولیه (کیلوگرم)" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.InitialWeightKg}" FontSize="20" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="آخرین وزن (کیلوگرم)" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.LatestWeightKg}" FontSize="20" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="افزایش/کاهش کل" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.TotalWeightChangeKg}" FontSize="20" FontWeight="Bold"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="میانگین افزایش روزانه" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.AverageDailyGainKg}" FontSize="20" FontWeight="Bold"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="حداقل وزن" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.MinWeightKg}" FontSize="18"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="حداکثر وزن" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.MaxWeightKg}" FontSize="18"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="تعداد وزن‌گیری" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.WeighingCount}" FontSize="18"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="بازه زمانی (روز)" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.PeriodDays}" FontSize="18"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="میانگین تغییر هر وزن‌گیری" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.AverageWeightChangeKg}" FontSize="18"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="وضعیت رشد" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.GrowthStatus}" FontSize="18" FontWeight="Bold" Foreground="#059669"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="شماره دام" FontWeight="SemiBold" Foreground="#6B7280"/>
+                    <TextBlock Text="{Binding Report.SheepNumber}" FontSize="18"/>
+                </StackPanel>
+            </UniformGrid>
+        </Border>
+
+        <TextBlock Grid.Row="3" Text="روند وزن‌گیری به ترتیب تاریخ" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+        <DataGrid Grid.Row="4"
+                  ItemsSource="{Binding Report.Points}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  HeadersVisibility="Column"
+                  CanUserAddRows="False"
+                  GridLinesVisibility="Horizontal">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="تاریخ (میلادی)" Binding="{Binding Date, StringFormat={}{0:yyyy/MM/dd}}" Width="160"/>
+                <DataGridTextColumn Header="وزن (کیلوگرم)" Binding="{Binding WeightKg}" Width="140"/>
+                <DataGridTextColumn Header="تغییر نسبت به قبلی" Binding="{Binding ChangeFromPreviousKg}" Width="160"/>
+                <DataGridCheckBoxColumn Header="وزن اولیه" Binding="{Binding IsInitial}" Width="100" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

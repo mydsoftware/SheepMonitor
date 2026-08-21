@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, 'agent/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: دریافت کد
+        uses: actions/checkout@v4
+
+      - name: نصب .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: بازیابی وابستگی‌ها
+        run: dotnet restore SheepMonitor.sln
+
+      - name: ساخت پروژه
+        run: dotnet build SheepMonitor.sln --configuration Release --no-restore
+
+      - name: اجرای تست‌ها
+        run: dotnet test tests/SheepMonitor.Tests/SheepMonitor.Tests.csproj --configuration Release --no-build --verbosity normal

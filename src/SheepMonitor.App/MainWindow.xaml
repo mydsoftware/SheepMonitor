@@ -1,0 +1,22 @@
+<Window x:Class="SheepMonitor.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="پایش گوسفندان" Height="720" Width="1200" FlowDirection="RightToLeft">
+    <Grid Background="#F5F7FA">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="230"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Border Grid.Column="0" Background="#1F2937" Padding="18">
+            <StackPanel>
+                <TextBlock Text="پایش گوسفندان" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
+                <Button Content="داشبورد" Margin="0,4" Padding="12" Click="Dashboard_Click"/>
+                <Button Content="گوسفندان" Margin="0,4" Padding="12" Click="Sheep_Click"/>
+                <Button Content="گزارش رشد" Margin="0,4" Padding="12" Click="GrowthReport_Click"/>
+                <Button Content="وزن‌گیری" Margin="0,4" Padding="12" Click="WeightEntry_Click"/>
+                <Button Content="سلامت و بیماری" Margin="0,4" Padding="12" Click="Health_Click"/>
+                <Button Content="درمان" Margin="0,4" Padding="12" Click="Treatment_Click"/>
+                <Button Content="برنامه غذایی" Margin="0,4" Padding="12" Click="FeedPlan_Click"/>
+                <Button Content="تخصیص جیره" Margin="0,4" Padding="12" Click="FeedAssignment_Click"/>
+                <Button Content="موتور جیره پویا" Margin="0,4" Padding="12" Click="Ration_Click"/>
+                <Button Content="تنظیم قوانین جیره" Margin="0,4" Padding="12" Click="RationRules_Click"/>
+                <Button Content="اطلاعات پایه" Margin="0,4" Padding="12" Click="ReferenceData_Click"/>
+            </StackPanel>
+        </Border>
+        <Frame x:Name="ContentFrame" Grid.Column="1" NavigationUIVisibility="Hidden" Margin="20"/>
+    </Grid>
+</Window>

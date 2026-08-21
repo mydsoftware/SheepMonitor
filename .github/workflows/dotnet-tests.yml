@@ -1,0 +1,25 @@
+name: تست خودکار پروژه
+
+on:
+  push:
+    branches: [ main, agent/database-model ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: اجرای تست‌های پروژه
+    runs-on: windows-latest
+    steps:
+      - name: دریافت کد پروژه
+        uses: actions/checkout@v4
+      - name: نصب دات‌نت
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: بازیابی وابستگی‌ها
+        run: dotnet restore SheepMonitor.sln
+      - name: ساخت پروژه
+        run: dotnet build SheepMonitor.sln --no-restore --configuration Release
+      - name: اجرای تست‌ها
+        run: dotnet test tests/SheepMonitor.Tests/SheepMonitor.Tests.csproj --no-build --configuration Release --verbosity normal

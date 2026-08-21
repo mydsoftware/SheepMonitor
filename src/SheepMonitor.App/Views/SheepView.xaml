@@ -1,0 +1,30 @@
+<UserControl x:Class="SheepMonitor.App.Views.SheepView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="مدیریت گوسفندان" FontSize="28" FontWeight="Bold" Margin="0,0,0,18"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="جستجو:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Width="260" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="بارگذاری" Width="100" Margin="12,0,0,0" Click="Load_Click"/>
+            <Button Content="گوسفند جدید" Width="120" Margin="8,0,0,0" Click="New_Click"/>
+            <Button Content="ویرایش" Width="90" Margin="8,0,0,0" Click="Edit_Click"/>
+            <Button Content="حذف" Width="90" Margin="8,0,0,0" Click="Delete_Click"/>
+        </StackPanel>
+        <TextBlock Grid.Row="2" Text="برای ویرایش یا حذف، ابتدا یک گوسفند را از جدول انتخاب کنید." Margin="0,0,0,12"/>
+        <DataGrid x:Name="SheepGrid" Grid.Row="3" ItemsSource="{Binding FilteredItems}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="شماره دام" Binding="{Binding Number}" Width="140"/>
+                <DataGridTextColumn Header="جنسیت" Binding="{Binding Gender}" Width="110"/>
+                <DataGridTextColumn Header="وزن اولیه (کیلوگرم)" Binding="{Binding InitialWeightKg}" Width="150"/>
+                <DataGridTextColumn Header="تاریخ وزن اولیه" Binding="{Binding InitialWeighingDate, StringFormat=yyyy/MM/dd}" Width="160"/>
+                <DataGridCheckBoxColumn Header="بیمار" Binding="{Binding IsSick}" Width="80"/>
+                <DataGridTextColumn Header="وضعیت سلامت" Binding="{Binding HealthStatus}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
