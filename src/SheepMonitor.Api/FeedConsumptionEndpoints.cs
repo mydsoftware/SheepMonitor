@@ -41,6 +41,30 @@ public static class FeedConsumptionEndpoints
                 query = query.Where(x => x.ConsumedAt <= to.Value);
 
             var rows = await query.ToListAsync(cancellationToken);
+            var thresholds = await db.FeedConsumptionThresholds
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .ToListAsync(cancellationToken);
+
+            string ResolveStatus(string feedCode, decimal variancePercent)
+            {
+                var threshold = thresholds
+                    .Where(x => x.FeedCode == feedCode)
+                    .OrderByDescending(x => x.Id)
+                    .FirstOrDefault();
+
+                if (threshold is null)
+                    return "نامشخص";
+
+                if (variancePercent <= -Math.Abs(threshold.LowDeviationPercent))
+                    return "کم‌مصرف";
+
+                if (variancePercent >= Math.Abs(threshold.HighDeviationPercent))
+                    return "پرمصرف";
+
+                return "نرمال";
+            }
+
             var byFeed = rows
                 .GroupBy(x => x.item.FeedCode)
                 .Select(g =>
@@ -58,7 +82,8 @@ public static class FeedConsumptionEndpoints
                         WasteKg = waste,
                         NetActualKg = actual - waste,
                         VarianceKg = variance,
-                        VariancePercent = variancePercent
+                        VariancePercent = variancePercent,
+                        Status = ResolveStatus(g.Key, variancePercent)
                     };
                 })
                 .OrderBy(x => x.FeedCode)
