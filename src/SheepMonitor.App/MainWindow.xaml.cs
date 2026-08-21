@@ -22,6 +22,16 @@ public partial class MainWindow : Window
 
     private async void Dashboard_Click(object sender, RoutedEventArgs e) => await ShowDashboardAsync();
 
+    /// <summary>
+    /// صفحه مدیریت گوسفندان را با داده‌های واقعی دیتابیس نمایش می‌دهد.
+    /// </summary>
+    private async void Sheep_Click(object sender, RoutedEventArgs e)
+    {
+        var vm = ((App)Application.Current).GetRequiredService<SheepViewModel>();
+        await vm.LoadAsync();
+        ContentFrame.Content = new SheepView { DataContext = vm };
+    }
+
     private async void ReferenceData_Click(object sender, RoutedEventArgs e)
     {
         var vm = ((App)Application.Current).GetRequiredService<ReferenceDataViewModel>(); vm.Category = ReferenceDataCategories.Symptom; await vm.LoadAsync(); ContentFrame.Content = new ReferenceDataView { DataContext = vm };
