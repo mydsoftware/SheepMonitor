@@ -28,6 +28,10 @@ public sealed class DashboardViewModel(SheepMonitorDbContext db)
         WasteKg = await db.FeedConsumptionRecords.SumAsync(x => (decimal?)x.WasteAmountKg, cancellationToken) ?? 0m;
 
         FeedSummary.Clear();
+        var thresholds = await db.FeedConsumptionThresholds
+            .Where(x => x.IsActive)
+            .ToDictionaryAsync(x => x.FeedCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
+
         var rows = await db.FeedConsumptionItems
             .GroupBy(x => x.FeedCode)
             .Select(g => new FeedDashboardRow
@@ -41,7 +45,10 @@ public sealed class DashboardViewModel(SheepMonitorDbContext db)
             .ToListAsync(cancellationToken);
 
         foreach (var row in rows)
+        {
+            row.ApplyThreshold(thresholds.TryGetValue(row.FeedCode, out var threshold) ? threshold : null);
             FeedSummary.Add(row);
+        }
 
         DailyConsumption.Clear();
         var dailyRows = await db.FeedConsumptionRecords
@@ -72,6 +79,22 @@ public sealed class FeedDashboardRow
     public decimal WasteKg { get; init; }
     public decimal NetKg => Math.Max(0m, ActualKg - WasteKg);
     public decimal DeviationPercent => PlannedKg == 0m ? 0m : ((NetKg - PlannedKg) / PlannedKg) * 100m;
+    public string Status { get; private set; } = "نامشخص";
+
+    public void ApplyThreshold(SheepMonitor.Core.Models.FeedConsumptionThreshold? threshold)
+    {
+        if (threshold is null)
+        {
+            Status = "نامشخص";
+            return;
+        }
+
+        Status = DeviationPercent < -threshold.LowDeviationPercent
+            ? "کم‌مصرف"
+            : DeviationPercent > threshold.HighDeviationPercent
+                ? "پرمصرف"
+                : "نرمال";
+    }
 }
 
 public sealed class DailyConsumptionRow
