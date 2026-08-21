@@ -8,6 +8,13 @@ public partial class TreatmentView : UserControl
 {
     public TreatmentView() => InitializeComponent();
 
+    private async void LoadHealth_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not TreatmentViewModel vm) return;
+        try { await vm.LoadHealthRecordsAsync(); }
+        catch (Exception ex) { MessageBox.Show(ex.Message, "خطا", MessageBoxButton.OK, MessageBoxImage.Warning); }
+    }
+
     private async void Load_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is not TreatmentViewModel vm) return;

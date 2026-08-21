@@ -13,11 +13,17 @@
         <TextBlock Text="درمان بیماری" FontSize="28" FontWeight="Bold" Margin="0,0,0,18"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,14">
-            <TextBlock Text="سابقه بیماری:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBlock Text="گوسفند:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox ItemsSource="{Binding Sheep}"
+                      SelectedItem="{Binding SelectedSheep}"
+                      DisplayMemberPath="Number"
+                      Width="160"/>
+            <Button Content="بارگذاری سوابق بیماری" Margin="10,0,0,0" Padding="12,6" Click="LoadHealth_Click"/>
+            <TextBlock Text="سابقه بیماری:" VerticalAlignment="Center" Margin="16,0,8,0"/>
             <ComboBox ItemsSource="{Binding HealthRecords}"
                       SelectedValue="{Binding SelectedHealthRecordId}"
                       SelectedValuePath="Id"
-                      Width="360">
+                      Width="280">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock>
@@ -28,7 +34,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <Button Content="نمایش درمان‌ها" Margin="10,0,0,0" Padding="14,6" Click="Load_Click"/>
+            <Button Content="نمایش درمان‌ها" Margin="10,0,0,0" Padding="12,6" Click="Load_Click"/>
         </StackPanel>
 
         <GroupBox Grid.Row="2" Header="ثبت درمان" Margin="0,0,0,14">

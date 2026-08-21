@@ -12,25 +12,44 @@ namespace SheepMonitor.App.ViewModels;
 /// </summary>
 public sealed class TreatmentViewModel : INotifyPropertyChanged
 {
+    private readonly ISheepService _sheepService;
     private readonly IHealthService _healthService;
     private readonly ITreatmentService _treatmentService;
     private readonly IReferenceDataService _referenceDataService;
+    private Sheep? _selectedSheep;
     private int? _selectedHealthRecordId;
 
-    public TreatmentViewModel(IHealthService healthService, ITreatmentService treatmentService, IReferenceDataService referenceDataService)
+    public TreatmentViewModel(
+        ISheepService sheepService,
+        IHealthService healthService,
+        ITreatmentService treatmentService,
+        IReferenceDataService referenceDataService)
     {
+        _sheepService = sheepService;
         _healthService = healthService;
         _treatmentService = treatmentService;
         _referenceDataService = referenceDataService;
         Model = new SheepTreatmentRecord { StartedAt = DateTime.Today };
     }
 
+    public ObservableCollection<Sheep> Sheep { get; } = [];
     public ObservableCollection<SheepHealthRecord> HealthRecords { get; } = [];
     public ObservableCollection<SheepTreatmentRecord> Treatments { get; } = [];
     public IReadOnlyList<ReferenceData> TreatmentTypes { get; private set; } = [];
     public IReadOnlyList<ReferenceData> Medicines { get; private set; } = [];
     public IReadOnlyList<ReferenceData> DoseUnits { get; private set; } = [];
     public IReadOnlyList<ReferenceData> TreatmentResults { get; private set; } = [];
+
+    public Sheep? SelectedSheep
+    {
+        get => _selectedSheep;
+        set
+        {
+            if (_selectedSheep == value) return;
+            _selectedSheep = value;
+            OnPropertyChanged();
+        }
+    }
 
     public int? SelectedHealthRecordId
     {
@@ -47,11 +66,11 @@ public sealed class TreatmentViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public async Task LoadAsync(int sheepId, CancellationToken cancellationToken = default)
+    public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        HealthRecords.Clear();
-        foreach (var item in await _healthService.GetBySheepAsync(sheepId, cancellationToken))
-            HealthRecords.Add(item);
+        Sheep.Clear();
+        foreach (var item in await _sheepService.GetAllAsync(cancellationToken))
+            Sheep.Add(item);
 
         TreatmentTypes = await _referenceDataService.GetAsync(ReferenceDataCategories.TreatmentType, cancellationToken);
         Medicines = await _referenceDataService.GetAsync(ReferenceDataCategories.Medication, cancellationToken);
@@ -62,6 +81,19 @@ public sealed class TreatmentViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Medicines));
         OnPropertyChanged(nameof(DoseUnits));
         OnPropertyChanged(nameof(TreatmentResults));
+    }
+
+    public async Task LoadHealthRecordsAsync(CancellationToken cancellationToken = default)
+    {
+        if (SelectedSheep is null)
+            throw new InvalidOperationException("ابتدا یک گوسفند را انتخاب کنید.");
+
+        HealthRecords.Clear();
+        Treatments.Clear();
+        SelectedHealthRecordId = null;
+
+        foreach (var item in await _healthService.GetBySheepAsync(SelectedSheep.Id, cancellationToken))
+            HealthRecords.Add(item);
     }
 
     public async Task LoadTreatmentsAsync(CancellationToken cancellationToken = default)
