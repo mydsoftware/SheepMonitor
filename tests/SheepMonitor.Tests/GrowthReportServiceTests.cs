@@ -78,7 +78,7 @@ public sealed class GrowthReportServiceTests
         Assert.NotNull(report);
         Assert.Equal(45m, report!.LatestWeightKg);
         Assert.Equal(0m, report.TotalWeightChangeKg);
-        Assert.Equal(1, report.Points.Count);
+        Assert.Single(report.Points);
         Assert.True(report.Points[0].IsInitial);
         Assert.Equal(0, report.WeighingCount);
         Assert.Equal("داده وزن‌گیری کافی نیست", report.GrowthStatus);
