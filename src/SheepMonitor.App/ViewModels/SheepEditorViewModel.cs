@@ -8,7 +8,7 @@ namespace SheepMonitor.App.ViewModels;
 /// </summary>
 public sealed class SheepEditorViewModel(ISheepService sheepService, IReferenceDataService referenceDataService)
 {
-    public Sheep Model { get; private set; } = new() { InitialWeighingDate = DateTime.Today };
+    public Sheep Model { get; set; } = new() { InitialWeighingDate = DateTime.Today };
     public IReadOnlyList<ReferenceData> Genders { get; private set; } = [];
     public IReadOnlyList<ReferenceData> HealthStatuses { get; private set; } = [];
 
