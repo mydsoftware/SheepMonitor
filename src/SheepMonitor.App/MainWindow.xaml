@@ -4,7 +4,7 @@
         <Border Grid.Column="0" Background="#1F2937" Padding="18">
             <StackPanel>
                 <TextBlock Text="پایش گوسفندان" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
-                <Button Content="داشبورد" Margin="0,4" Padding="12"/>
+                <Button Content="داشبورد" Margin="0,4" Padding="12" Click="Dashboard_Click"/>
                 <Button Content="گوسفندان" Margin="0,4" Padding="12"/>
                 <Button Content="وزن‌گیری" Margin="0,4" Padding="12" Click="WeightEntry_Click"/>
                 <Button Content="سلامت و بیماری" Margin="0,4" Padding="12" Click="Health_Click"/>
