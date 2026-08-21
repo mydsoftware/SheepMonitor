@@ -78,11 +78,16 @@ public sealed class HealthService(SheepMonitorDbContext db) : IHealthService
 
     /// <summary>
     /// اگر هیچ بیماری فعالی باقی نمانده باشد، وضعیت گوسفند به سالم برمی‌گردد.
+    /// از موجودیت‌های tracked استفاده می‌کند تا تغییرات قبل از SaveChanges دیده شوند.
     /// </summary>
     private async Task RefreshSheepHealthStatusAsync(int sheepId, CancellationToken cancellationToken)
     {
-        var hasActiveDisease = await db.SheepHealthRecords
-            .AnyAsync(x => x.SheepId == sheepId && x.RecoveredAt == null, cancellationToken);
+        // بارگذاری با tracking تا تغییرات محلی (مثل RecoveredAt) در محاسبه لحاظ شوند
+        var records = await db.SheepHealthRecords
+            .Where(x => x.SheepId == sheepId)
+            .ToListAsync(cancellationToken);
+
+        var hasActiveDisease = records.Any(x => x.RecoveredAt == null);
 
         var sheep = await db.Sheep.SingleAsync(x => x.Id == sheepId, cancellationToken);
         sheep.IsSick = hasActiveDisease;
