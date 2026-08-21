@@ -56,6 +56,25 @@
                         <DataGridTextColumn Header="ضایعات" Binding="{Binding WasteKg, StringFormat={}{0:N2}}" Width="130"/>
                         <DataGridTextColumn Header="مصرف خالص" Binding="{Binding NetKg, StringFormat={}{0:N2}}" Width="140"/>
                         <DataGridTextColumn Header="انحراف درصدی" Binding="{Binding DeviationPercent, StringFormat={}{0:N2}%}" Width="140"/>
+                        <DataGridTemplateColumn Header="وضعیت مصرف" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Padding="8,4" CornerRadius="6" HorizontalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#EEEEEE"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="کم‌مصرف"><Setter Property="Background" Value="#FFF3CD"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="نرمال"><Setter Property="Background" Value="#D1E7DD"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="پرمصرف"><Setter Property="Background" Value="#F8D7DA"/></DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Status}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
