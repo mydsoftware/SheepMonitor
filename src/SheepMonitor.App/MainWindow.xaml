@@ -6,6 +6,7 @@
                 <TextBlock Text="پایش گوسفندان" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,0,0,30"/>
                 <Button Content="داشبورد" Margin="0,4" Padding="12" Click="Dashboard_Click"/>
                 <Button Content="گوسفندان" Margin="0,4" Padding="12" Click="Sheep_Click"/>
+                <Button Content="گزارش رشد" Margin="0,4" Padding="12" Click="GrowthReport_Click"/>
                 <Button Content="وزن‌گیری" Margin="0,4" Padding="12" Click="WeightEntry_Click"/>
                 <Button Content="سلامت و بیماری" Margin="0,4" Padding="12" Click="Health_Click"/>
                 <Button Content="درمان" Margin="0,4" Padding="12" Click="Treatment_Click"/>
