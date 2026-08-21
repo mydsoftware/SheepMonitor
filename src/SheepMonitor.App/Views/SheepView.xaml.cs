@@ -20,22 +20,22 @@ public partial class SheepView : UserControl
         if (DataContext is not SheepViewModel vm)
             return;
 
-        var sheep = new Sheep
+        var editor = ((App)Application.Current).GetRequiredService<SheepEditorViewModel>();
+        await editor.LoadLookupsAsync();
+        editor.Model = new Sheep { InitialWeighingDate = DateTime.Today };
+
+        var window = new Window
         {
-            Number = "",
-            Gender = "",
-            InitialWeighingDate = DateTime.Today
+            Title = "ثبت گوسفند جدید",
+            Width = 760,
+            Height = 700,
+            FlowDirection = FlowDirection.RightToLeft,
+            Content = new SheepEditorView { DataContext = editor },
+            Owner = Window.GetWindow(this)
         };
 
-        try
-        {
-            await vm.AddAsync(sheep);
-            MessageBox.Show("گوسفند جدید با موفقیت ثبت شد.", "موفق", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "خطا در ثبت گوسفند", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+        if (window.ShowDialog() == true)
+            await vm.LoadAsync();
     }
 
     private async void Edit_Click(object sender, RoutedEventArgs e)
@@ -46,15 +46,22 @@ public partial class SheepView : UserControl
             return;
         }
 
-        try
+        var editor = ((App)Application.Current).GetRequiredService<SheepEditorViewModel>();
+        editor.Load(vm.SelectedItem);
+        await editor.LoadLookupsAsync();
+
+        var window = new Window
         {
-            await vm.UpdateAsync(vm.SelectedItem);
-            MessageBox.Show("اطلاعات گوسفند با موفقیت به‌روزرسانی شد.", "موفق", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "خطا در ویرایش گوسفند", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+            Title = $"ویرایش گوسفند {vm.SelectedItem.Number}",
+            Width = 760,
+            Height = 700,
+            FlowDirection = FlowDirection.RightToLeft,
+            Content = new SheepEditorView { DataContext = editor },
+            Owner = Window.GetWindow(this)
+        };
+
+        if (window.ShowDialog() == true)
+            await vm.LoadAsync();
     }
 
     private async void Delete_Click(object sender, RoutedEventArgs e)
