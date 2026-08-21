@@ -17,18 +17,10 @@
             </DockPanel>
 
             <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,18">
-                <Border Background="White" CornerRadius="10" Padding="18" Margin="5">
-                    <StackPanel><TextBlock Text="تعداد کل گوسفندان"/><TextBlock Text="{Binding TotalSheep}" FontSize="28" FontWeight="Bold"/></StackPanel>
-                </Border>
-                <Border Background="White" CornerRadius="10" Padding="18" Margin="5">
-                    <StackPanel><TextBlock Text="گوسفندان بیمار"/><TextBlock Text="{Binding SickSheep}" FontSize="28" FontWeight="Bold"/></StackPanel>
-                </Border>
-                <Border Background="White" CornerRadius="10" Padding="18" Margin="5">
-                    <StackPanel><TextBlock Text="جیره برنامه‌ریزی‌شده (کیلو)"/><TextBlock Text="{Binding PlannedKg, StringFormat={}{0:N2}}" FontSize="24" FontWeight="Bold"/></StackPanel>
-                </Border>
-                <Border Background="White" CornerRadius="10" Padding="18" Margin="5">
-                    <StackPanel><TextBlock Text="مصرف خالص (کیلو)"/><TextBlock Text="{Binding NetKg, StringFormat={}{0:N2}}" FontSize="24" FontWeight="Bold"/></StackPanel>
-                </Border>
+                <Border Background="White" CornerRadius="10" Padding="18" Margin="5"><StackPanel><TextBlock Text="تعداد کل گوسفندان"/><TextBlock Text="{Binding TotalSheep}" FontSize="28" FontWeight="Bold"/></StackPanel></Border>
+                <Border Background="White" CornerRadius="10" Padding="18" Margin="5"><StackPanel><TextBlock Text="گوسفندان بیمار"/><TextBlock Text="{Binding SickSheep}" FontSize="28" FontWeight="Bold"/></StackPanel></Border>
+                <Border Background="White" CornerRadius="10" Padding="18" Margin="5"><StackPanel><TextBlock Text="جیره برنامه‌ریزی‌شده (کیلو)"/><TextBlock Text="{Binding PlannedKg, StringFormat={}{0:N2}}" FontSize="24" FontWeight="Bold"/></StackPanel></Border>
+                <Border Background="White" CornerRadius="10" Padding="18" Margin="5"><StackPanel><TextBlock Text="مصرف خالص (کیلو)"/><TextBlock Text="{Binding NetKg, StringFormat={}{0:N2}}" FontSize="24" FontWeight="Bold"/></StackPanel></Border>
             </UniformGrid>
 
             <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="18" Margin="5,0,5,18">
@@ -38,11 +30,9 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,4">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="95"/><ColumnDefinition Width="*"/><ColumnDefinition Width="85"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="105"/><ColumnDefinition Width="*"/><ColumnDefinition Width="90"/></Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding Date, StringFormat={}{0:yyyy/MM/dd}}" VerticalAlignment="Center"/>
-                                    <Border Grid.Column="1" Height="18" Background="#E5E7EB" CornerRadius="8" Margin="8,0">
-                                        <Border HorizontalAlignment="Left" Width="{Binding BarWidth, Converter={StaticResource DailyBarWidthConverter}}" Background="#16A34A" CornerRadius="8"/>
-                                    </Border>
+                                    <ProgressBar Grid.Column="1" Height="18" Margin="8,0" Minimum="0" Maximum="1" Value="{Binding BarWidth}" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="2" Text="{Binding NetKg, StringFormat={}{0:N2} کیلو}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
