@@ -7,6 +7,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -30,7 +31,27 @@
                 </Border>
             </UniformGrid>
 
-            <Grid Grid.Row="2">
+            <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="18" Margin="5,0,5,18">
+                <StackPanel>
+                    <TextBlock Text="روند روزانه مصرف خالص" FontSize="21" FontWeight="Bold" Margin="0,0,0,12"/>
+                    <ItemsControl ItemsSource="{Binding DailyConsumption}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="95"/><ColumnDefinition Width="*"/><ColumnDefinition Width="85"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Date, StringFormat={}{0:yyyy/MM/dd}}" VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1" Height="18" Background="#E5E7EB" CornerRadius="8" Margin="8,0">
+                                        <Border HorizontalAlignment="Left" Width="{Binding BarWidth, Converter={StaticResource DailyBarWidthConverter}}" Background="#16A34A" CornerRadius="8"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="2" Text="{Binding NetKg, StringFormat={}{0:N2} کیلو}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="3">
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                 <TextBlock Text="خلاصه مصرف خوراک" FontSize="21" FontWeight="Bold" Margin="0,0,0,10"/>
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
