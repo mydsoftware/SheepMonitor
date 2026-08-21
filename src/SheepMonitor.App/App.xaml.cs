@@ -33,6 +33,7 @@ public partial class App : Application
         services.AddTransient<GrowthReportViewModel>(); services.AddTransient<HealthViewModel>(); services.AddTransient<TreatmentViewModel>();
         services.AddTransient<FeedPlanViewModel>(); services.AddTransient<SheepFeedPlanAssignmentViewModel>(); services.AddTransient<RationViewModel>();
         services.AddTransient<RationRuleEditorViewModel>();
+        services.AddTransient<DashboardViewModel>();
         _services = services.BuildServiceProvider();
     }
 
