@@ -26,6 +26,19 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Sheep>(e =>
+        {
+            e.ToTable("Sheep");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Number).HasMaxLength(100).IsRequired();
+            e.Property(x => x.ImagePath).HasMaxLength(1000);
+            e.Property(x => x.Gender).HasMaxLength(100).IsRequired();
+            e.Property(x => x.HealthStatus).HasMaxLength(250).IsRequired();
+            e.Property(x => x.InitialWeightKg).HasPrecision(10, 2);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.HasIndex(x => x.Number).IsUnique();
+        });
+
         modelBuilder.Entity<FeedPrice>(e =>
         {
             e.ToTable("FeedPrices");
