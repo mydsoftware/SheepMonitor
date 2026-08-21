@@ -9,37 +9,83 @@ namespace SheepMonitor.Data.Services;
 /// </summary>
 public sealed class HealthService(SheepMonitorDbContext db) : IHealthService
 {
-    public async Task<IReadOnlyList<HealthRecord>> GetBySheepAsync(int sheepId, CancellationToken cancellationToken = default) =>
-        await db.HealthRecords.AsNoTracking()
+    public async Task<IReadOnlyList<SheepHealthRecord>> GetBySheepAsync(int sheepId, CancellationToken cancellationToken = default) =>
+        await db.SheepHealthRecords.AsNoTracking()
             .Where(x => x.SheepId == sheepId)
-            .OrderByDescending(x => x.RecordedAt)
+            .OrderByDescending(x => x.StartedAt)
             .ThenByDescending(x => x.Id)
             .ToListAsync(cancellationToken);
 
-    public async Task<HealthRecord> AddAsync(HealthRecord record, CancellationToken cancellationToken = default)
+    public async Task<SheepHealthRecord> AddAsync(SheepHealthRecord record, CancellationToken cancellationToken = default)
     {
         if (!await db.Sheep.AnyAsync(x => x.Id == record.SheepId, cancellationToken))
             throw new InvalidOperationException("گوسفند انتخاب‌شده در پایگاه داده وجود ندارد.");
-        if (record.RecordedAt == default)
-            throw new InvalidOperationException("تاریخ ثبت وضعیت سلامت الزامی است.");
 
-        db.HealthRecords.Add(record);
+        if (string.IsNullOrWhiteSpace(record.DiseaseCode))
+            throw new InvalidOperationException("کد بیماری الزامی است.");
+
+        if (record.StartedAt == default)
+            throw new InvalidOperationException("تاریخ شروع بیماری الزامی است.");
+
+        if (record.RecoveredAt.HasValue && record.RecoveredAt.Value < record.StartedAt)
+            throw new ArgumentException("تاریخ بهبودی نمی‌تواند قبل از تاریخ شروع باشد.");
+
+        db.SheepHealthRecords.Add(record);
+
+        // به‌روزرسانی وضعیت سلامت گوسفند در صورت بیماری فعال
+        var sheep = await db.Sheep.SingleAsync(x => x.Id == record.SheepId, cancellationToken);
+        if (!record.RecoveredAt.HasValue)
+        {
+            sheep.IsSick = true;
+            sheep.HealthStatus = "بیمار";
+        }
+
         await db.SaveChangesAsync(cancellationToken);
         return record;
     }
 
-    public async Task UpdateAsync(HealthRecord record, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(SheepHealthRecord record, CancellationToken cancellationToken = default)
     {
-        var existing = await db.HealthRecords.SingleOrDefaultAsync(x => x.Id == record.Id, cancellationToken)
+        var existing = await db.SheepHealthRecords.SingleOrDefaultAsync(x => x.Id == record.Id, cancellationToken)
             ?? throw new InvalidOperationException("سابقه سلامت پیدا نشد.");
 
-        existing.RecordedAt = record.RecordedAt;
-        existing.IsSick = record.IsSick;
-        existing.Status = record.Status;
-        existing.DiseaseName = record.DiseaseName;
-        existing.Symptoms = record.Symptoms;
-        existing.Treatment = record.Treatment;
-        existing.Notes = record.Notes;
+        if (record.RecoveredAt.HasValue && record.RecoveredAt.Value < record.StartedAt)
+            throw new ArgumentException("تاریخ بهبودی نمی‌تواند قبل از تاریخ شروع باشد.");
+
+        existing.DiseaseCode = record.DiseaseCode;
+        existing.SymptomsCode = record.SymptomsCode;
+        existing.SeverityCode = record.SeverityCode;
+        existing.StartedAt = record.StartedAt;
+        existing.RecoveredAt = record.RecoveredAt;
+        existing.VeterinaryNotes = record.VeterinaryNotes;
+
+        await RefreshSheepHealthStatusAsync(existing.SheepId, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task MarkRecoveredAsync(int recordId, DateTime recoveredAt, CancellationToken cancellationToken = default)
+    {
+        var existing = await db.SheepHealthRecords.SingleOrDefaultAsync(x => x.Id == recordId, cancellationToken)
+            ?? throw new InvalidOperationException("سابقه سلامت پیدا نشد.");
+
+        if (recoveredAt < existing.StartedAt)
+            throw new ArgumentException("تاریخ بهبودی نمی‌تواند قبل از تاریخ شروع باشد.");
+
+        existing.RecoveredAt = recoveredAt;
+        await RefreshSheepHealthStatusAsync(existing.SheepId, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// اگر هیچ بیماری فعالی باقی نمانده باشد، وضعیت گوسفند به سالم برمی‌گردد.
+    /// </summary>
+    private async Task RefreshSheepHealthStatusAsync(int sheepId, CancellationToken cancellationToken)
+    {
+        var hasActiveDisease = await db.SheepHealthRecords
+            .AnyAsync(x => x.SheepId == sheepId && x.RecoveredAt == null, cancellationToken);
+
+        var sheep = await db.Sheep.SingleAsync(x => x.Id == sheepId, cancellationToken);
+        sheep.IsSick = hasActiveDisease;
+        sheep.HealthStatus = hasActiveDisease ? "بیمار" : "سالم";
     }
 }
