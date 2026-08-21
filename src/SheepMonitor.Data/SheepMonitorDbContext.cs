@@ -39,6 +39,54 @@ public sealed class SheepMonitorDbContext(DbContextOptions<SheepMonitorDbContext
             e.HasIndex(x => x.Number).IsUnique();
         });
 
+        modelBuilder.Entity<WeightRecord>(e =>
+        {
+            e.ToTable("WeightRecords");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.WeightKg).HasPrecision(10, 2);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.HasIndex(x => new { x.SheepId, x.WeighedAt });
+            e.HasOne<Sheep>().WithMany().HasForeignKey(x => x.SheepId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SheepHealthRecord>(e =>
+        {
+            e.ToTable("SheepHealthRecords");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.DiseaseCode).HasMaxLength(100).IsRequired();
+            e.Property(x => x.SymptomsCode).HasMaxLength(100);
+            e.Property(x => x.SeverityCode).HasMaxLength(100);
+            e.Property(x => x.VeterinaryNotes).HasMaxLength(2000);
+            e.HasIndex(x => new { x.SheepId, x.StartedAt });
+            e.HasOne<Sheep>().WithMany().HasForeignKey(x => x.SheepId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SheepTreatmentRecord>(e =>
+        {
+            e.ToTable("SheepTreatmentRecords");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TreatmentCode).HasMaxLength(100).IsRequired();
+            e.Property(x => x.MedicineCode).HasMaxLength(100);
+            e.Property(x => x.Dose).HasPrecision(10, 3);
+            e.Property(x => x.DoseUnitCode).HasMaxLength(100);
+            e.Property(x => x.ResultCode).HasMaxLength(100);
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.HasIndex(x => new { x.HealthRecordId, x.StartedAt });
+            e.HasOne<SheepHealthRecord>().WithMany().HasForeignKey(x => x.HealthRecordId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ReferenceData>(e =>
+        {
+            e.ToTable("ReferenceData");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Category).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Code).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Title).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Notes).HasMaxLength(2000);
+            e.HasIndex(x => new { x.Category, x.Code }).IsUnique();
+            e.HasIndex(x => new { x.Category, x.IsActive, x.SortOrder });
+        });
+
         modelBuilder.Entity<FeedPrice>(e =>
         {
             e.ToTable("FeedPrices");

@@ -19,9 +19,18 @@ public sealed class TreatmentService(SheepMonitorDbContext db) : ITreatmentServi
     {
         if (!await db.SheepHealthRecords.AnyAsync(x => x.Id == record.HealthRecordId, cancellationToken))
             throw new InvalidOperationException("سابقه بیماری انتخاب‌شده وجود ندارد.");
-        if (record.Dose is <= 0) throw new ArgumentOutOfRangeException(nameof(record.Dose), "دوز باید بیشتر از صفر باشد.");
+
+        if (string.IsNullOrWhiteSpace(record.TreatmentCode))
+            throw new InvalidOperationException("کد نوع درمان الزامی است.");
+
+        if (record.Dose is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(record.Dose), "دوز در صورت وارد شدن باید بیشتر از صفر باشد.");
+
         if (record.EndedAt.HasValue && record.EndedAt.Value < record.StartedAt)
             throw new ArgumentException("تاریخ پایان درمان نمی‌تواند قبل از تاریخ شروع باشد.");
+
+        if (record.StartedAt == default)
+            throw new InvalidOperationException("تاریخ شروع درمان الزامی است.");
 
         db.SheepTreatmentRecords.Add(record);
         await db.SaveChangesAsync(cancellationToken);
@@ -30,9 +39,15 @@ public sealed class TreatmentService(SheepMonitorDbContext db) : ITreatmentServi
 
     public async Task UpdateAsync(SheepTreatmentRecord record, CancellationToken cancellationToken = default)
     {
-        if (record.Dose is <= 0) throw new ArgumentOutOfRangeException(nameof(record.Dose), "دوز باید بیشتر از صفر باشد.");
+        if (string.IsNullOrWhiteSpace(record.TreatmentCode))
+            throw new InvalidOperationException("کد نوع درمان الزامی است.");
+
+        if (record.Dose is <= 0)
+            throw new ArgumentOutOfRangeException(nameof(record.Dose), "دوز در صورت وارد شدن باید بیشتر از صفر باشد.");
+
         if (record.EndedAt.HasValue && record.EndedAt.Value < record.StartedAt)
             throw new ArgumentException("تاریخ پایان درمان نمی‌تواند قبل از تاریخ شروع باشد.");
+
         db.SheepTreatmentRecords.Update(record);
         await db.SaveChangesAsync(cancellationToken);
     }
