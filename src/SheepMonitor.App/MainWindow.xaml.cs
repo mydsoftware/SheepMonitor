@@ -32,6 +32,16 @@ public partial class MainWindow : Window
         ContentFrame.Content = new SheepView { DataContext = vm };
     }
 
+    /// <summary>
+    /// گزارش رشد گوسفند انتخاب‌شده را نمایش می‌دهد.
+    /// </summary>
+    private async void GrowthReport_Click(object sender, RoutedEventArgs e)
+    {
+        var vm = ((App)Application.Current).GetRequiredService<GrowthReportViewModel>();
+        await vm.LoadAsync();
+        ContentFrame.Content = new GrowthReportView { DataContext = vm };
+    }
+
     private async void ReferenceData_Click(object sender, RoutedEventArgs e)
     {
         var vm = ((App)Application.Current).GetRequiredService<ReferenceDataViewModel>(); vm.Category = ReferenceDataCategories.Symptom; await vm.LoadAsync(); ContentFrame.Content = new ReferenceDataView { DataContext = vm };
