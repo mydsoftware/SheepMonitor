@@ -28,7 +28,7 @@ public sealed class SheepEditorViewModel(ISheepService sheepService, IReferenceD
             InitialWeighingDate = sheep.InitialWeighingDate,
             IsSick = sheep.IsSick,
             HealthStatus = sheep.HealthStatus,
-            HealthNotes = sheep.HealthNotes
+            Notes = sheep.Notes
         };
     }
 
